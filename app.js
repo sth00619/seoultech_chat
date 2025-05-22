@@ -3,11 +3,15 @@ const cors = require('cors');
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsDoc = require('swagger-jsdoc');
 const mysql = require('mysql2/promise');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// 정적 파일 제공 (HTML, CSS, JS 파일들)
+app.use(express.static(path.join(__dirname, 'public')));
 
 // DB 연결 풀 생성
 const pool = mysql.createPool({
@@ -36,11 +40,16 @@ const swaggerOptions = {
       },
     ],
   },
-  apis: ['./app.js'], // API 경로 지정
+  apis: ['./app.js'],
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
+// 메인 페이지 라우트
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 /**
  * @swagger
@@ -114,4 +123,5 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Swagger UI available at http://localhost:${PORT}/api-docs`);
+  console.log(`Frontend available at http://localhost:${PORT}`);
 });
