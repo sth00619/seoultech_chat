@@ -1,10 +1,10 @@
 const chatRoomDao = require('../dao/chatRoomDao');
 
 class ChatController {
-  // 사용자의 채팅방 목록 조회
   async getChatRoomsByUser(req, res) {
     try {
       const { userId } = req.params;
+      // DAO 메서드 호출
       const chatRooms = await chatRoomDao.getChatRoomsByUserId(userId);
       res.json(chatRooms);
     } catch (error) {
@@ -13,10 +13,10 @@ class ChatController {
     }
   }
 
-  // 새 채팅방 생성
   async createChatRoom(req, res) {
     try {
       const { userId, title } = req.body;
+      // DAO 메서드 호출
       const chatRoomId = await chatRoomDao.createChatRoom(userId, title);
       res.status(201).json({ id: chatRoomId, message: 'Chat room created successfully' });
     } catch (error) {
@@ -25,9 +25,9 @@ class ChatController {
     }
   }
 
-  // 채팅방 정보 조회
   async getChatRoomById(req, res) {
     try {
+      // DAO 메서드 호출
       const chatRoom = await chatRoomDao.getChatRoomById(req.params.id);
       
       if (!chatRoom) {
@@ -41,12 +41,12 @@ class ChatController {
     }
   }
 
-  // 채팅방 제목 업데이트
   async updateChatRoomTitle(req, res) {
     try {
       const { id } = req.params;
       const { title } = req.body;
 
+      // DAO 메서드 호출
       const affectedRows = await chatRoomDao.updateChatRoomTitle(id, title);
       
       if (affectedRows === 0) {
@@ -60,9 +60,9 @@ class ChatController {
     }
   }
 
-  // 채팅방 삭제
   async deleteChatRoom(req, res) {
     try {
+      // DAO 메서드 호출
       const affectedRows = await chatRoomDao.deleteChatRoom(req.params.id);
       
       if (affectedRows === 0) {
