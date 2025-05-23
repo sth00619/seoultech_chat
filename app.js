@@ -6,10 +6,10 @@ const path = require('path');
 require('dotenv').config();
 
 // 라우트 import
-const userRoutes = require('./routes/userRoutes');
-const chatRoutes = require('./routes/chatRoutes');
-const messageRoutes = require('./routes/messageRoutes');
-const errorHandler = require('./middleware/errorHandler');
+const userRoutes = require('./server/src/routes/userRoutes');
+const chatRoutes = require('./server/src/routes/chatRoutes');
+const messageRoutes = require('./server/src/routes/messageRoutes');
+const errorHandler = require('./server/src/middleware/errorHandler');
 
 const app = express();
 
