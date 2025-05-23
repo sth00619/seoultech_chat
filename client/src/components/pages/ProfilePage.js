@@ -1,9 +1,9 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import Layout from '../components/common/Layout';
-import UserProfile from '../components/auth/UserProfile';
-import { ROUTES } from '../utils/constants';
+import { useAuth } from '../../hooks/useAuth';
+import Layout from '../../common/Layout';
+import UserProfile from '../auth/UserProfile';
+import { ROUTES } from '../../utils/constants';
 
 const ProfilePage = () => {
   const { isAuthenticated, loading } = useAuth();

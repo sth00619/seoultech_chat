@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useChat } from '../../hooks/useChat';
 import { useAuth } from '../../hooks/useAuth';
 import ChatList from './ChatList';
-import Button from '../common/Button';
-import Modal from '../common/Modal';
+import Button from '../../common/Button';
+import Modal from '../../common/Modal';
 import { Plus, Search, X } from 'lucide-react';
 
 const ChatSidebar = ({ isOpen, onClose }) => {

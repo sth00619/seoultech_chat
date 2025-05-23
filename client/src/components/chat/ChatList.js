@@ -1,5 +1,5 @@
 import React from 'react';
-import Loading from '../common/Loading';
+import Loading from '../../common/Loading';
 import { MessageCircle, Clock } from 'lucide-react';
 
 const ChatList = ({ chatRooms, currentChatRoom, onSelectChat, loading }) => {

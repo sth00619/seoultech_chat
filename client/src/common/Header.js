@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
-import { useTheme } from '../../contexts/ThemeContext';
-import { ROUTES } from '../../utils/constants';
+import { useAuth } from '../hooks/useAuth';
+import { useTheme } from '../contexts/ThemeContext';
+import { ROUTES } from '../utils/constants';
 import { User, Moon, Sun, Menu, X, MessageCircle, Users, Home } from 'lucide-react';
 
 const Header = () => {

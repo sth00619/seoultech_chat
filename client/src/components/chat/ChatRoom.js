@@ -1,11 +1,11 @@
-import React, { useEffect, useRef } from 'react';
-import { useChat } from '../../hooks/useChat';
+import React, { useEffect } from 'react';
+import { useChat, } from '../../hooks/useChat';
 import { useAuth } from '../../hooks/useAuth';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
-import ChatSidebar from './chatSideBar';
-import Loading from '../common/Loading';
-import ErrorMessage from '../common/ErrorMessage';
+import ChatSidebar from './ChatSidebar';
+import Loading from '../../common/Loading';
+import ErrorMessage from '../../common/ErrorMessage';
 import { Menu, Settings, MoreVertical } from 'lucide-react';
 
 const ChatRoom = () => {

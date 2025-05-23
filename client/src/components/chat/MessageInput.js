@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import Button from '../common/Button';
+import Button from '../../common/Button';
 import { Send, Paperclip, Smile } from 'lucide-react';
 
 const MessageInput = ({ onSend, disabled = false, placeholder = "메시지를 입력하세요..." }) => {
