@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import Loading from '../common/Loading';
+import Loading from '../../common/Loading';
 import { Bot, User } from 'lucide-react';
 
 const MessageList = ({ messages, loading, currentUser }) => {

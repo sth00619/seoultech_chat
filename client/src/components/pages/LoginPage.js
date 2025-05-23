@@ -1,9 +1,9 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import Layout from '../components/common/Layout';
-import LoginForm from '../components/auth/LoginForm';
-import { ROUTES } from '../utils/constants';
+import { useAuth } from '../../hooks/useAuth';
+import Layout from '../../common/Layout';
+import LoginForm from '../auth/LoginForm';
+import { ROUTES } from '../../utils/constants';
 
 const LoginPage = () => {
   const { isAuthenticated, loading } = useAuth();

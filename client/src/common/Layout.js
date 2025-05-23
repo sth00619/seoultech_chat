@@ -1,8 +1,8 @@
 import React from 'react';
 import Header from './Header';
 import Footer from './Footer';
-import { useTheme } from '../../contexts/ThemeContext';
-import '../../styles/components.css';
+import { useTheme } from '../contexts/ThemeContext';
+import '../styles/components.css';
 
 const Layout = ({ children, showHeader = true, showFooter = true }) => {
   const { isDarkMode } = useTheme();
