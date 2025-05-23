@@ -1,18 +1,16 @@
-export default api;
+import axios from 'axios';
 
-// ========================================
-// client/src/services/authService.js
-// ========================================
-import api from './api';
+const api = axios.create({
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:3000/api',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
 export const authService = {
   async login(email, password) {
     try {
       const response = await api.post('/auth/login', { email, password });
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-      }
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -26,11 +24,6 @@ export const authService = {
     } catch (error) {
       throw error.response?.data || error.message;
     }
-  },
-
-  async logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
   },
 
   getCurrentUser() {

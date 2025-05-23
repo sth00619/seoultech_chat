@@ -2,7 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsDoc = require('swagger-jsdoc');
-const path = require('path');
 require('dotenv').config();
 
 // 라우트 import
@@ -17,9 +16,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 정적 파일 제공 (프론트엔드)
-app.use(express.static(path.join(__dirname, 'src')));
-
 // Swagger 설정
 const swaggerOptions = {
   swaggerDefinition: {
@@ -27,7 +23,7 @@ const swaggerOptions = {
     info: {
       title: 'SeoulTech Chat API',
       version: '1.0.0',
-      description: 'API for SeoulTech Chat Application - 서울과학기술대학교 채팅 시스템',
+      description: 'API for SeoulTech Chat Application',
     },
     servers: [
       {
@@ -36,18 +32,28 @@ const swaggerOptions = {
       },
     ],
   },
-  apis: [
-    './routes/*.js',
-    './controllers/*.js'
-  ],
+  apis: ['./server/src/routes/*.js'],
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-// 메인 페이지 라우트 (프론트엔드)
+// API 정보 페이지 (루트)
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'src/pages', 'index.html'));
+  res.json({
+    message: '🚀 SeoulTech Chat API Server',
+    version: '1.0.0',
+    status: 'running',
+    endpoints: {
+      docs: '/api-docs',
+      health: '/health',
+      users: '/api/users',
+      chatRooms: '/api/chat-rooms',
+      messages: '/api/messages'
+    },
+    frontend: 'http://localhost:3001',
+    note: 'React 앱은 http://localhost:3001에서 실행 중입니다.'
+  });
 });
 
 // API 라우트 설정
@@ -55,7 +61,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/chat-rooms', chatRoutes);
 app.use('/api/messages', messageRoutes);
 
-// 헬스 체크 엔드포인트
+// 헬스 체크
 app.get('/health', (req, res) => {
   res.json({ 
     status: 'OK', 
@@ -68,35 +74,25 @@ app.get('/health', (req, res) => {
 app.use('*', (req, res) => {
   res.status(404).json({ 
     error: 'Route not found',
-    message: `Cannot ${req.method} ${req.originalUrl}`
+    message: `Cannot ${req.method} ${req.originalUrl}`,
+    suggestion: 'Try /api-docs for API documentation'
   });
 });
 
-// 에러 핸들러 (반드시 마지막에 위치)
+// 에러 핸들러
 app.use(errorHandler);
 
 // 서버 시작
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log('🚀=================================🚀');
-  console.log(`   SeoulTech Chat Server Running   `);
+  console.log(`   SeoulTech Chat API Server       `);
   console.log('🚀=================================🚀');
-  console.log(`🌐 Server: http://localhost:${PORT}`);
+  console.log(`🌐 API Server: http://localhost:${PORT}`);
   console.log(`📚 API Docs: http://localhost:${PORT}/api-docs`);
-  console.log(`📱 Frontend: http://localhost:${PORT}`);
-  console.log(`💊 Health: http://localhost:${PORT}/health`);
+  console.log(`💊 Health Check: http://localhost:${PORT}/health`);
+  console.log(`📱 React App: http://localhost:3001`);
   console.log('🚀=================================🚀');
-});
-
-// 우아한 종료 처리
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received, shutting down gracefully');
-  process.exit(0);
-});
-
-process.on('SIGINT', () => {
-  console.log('SIGINT received, shutting down gracefully');
-  process.exit(0);
 });
 
 module.exports = app;
