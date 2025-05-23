@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useReducer } from 'react';
 import { chatService } from '../services/chatService';
-import { toast } from 'react-toastify';
 
 const ChatContext = createContext();
 
@@ -60,7 +59,6 @@ export const ChatProvider = ({ children }) => {
   const handleError = (error, defaultMessage) => {
     const message = error.response?.data?.error || error.message || defaultMessage;
     dispatch({ type: 'SET_ERROR', payload: message });
-    toast.error(message);
   };
 
   // 채팅방 관련 액션들
@@ -81,7 +79,6 @@ export const ChatProvider = ({ children }) => {
       const result = await chatService.createChatRoom(userId, title);
       const newChatRoom = { id: result.id, title, user_id: userId, created_at: new Date() };
       dispatch({ type: 'ADD_CHAT_ROOM', payload: newChatRoom });
-      toast.success('새 채팅방이 생성되었습니다.');
       return newChatRoom;
     } catch (error) {
       handleError(error, '채팅방 생성에 실패했습니다.');
@@ -97,7 +94,6 @@ export const ChatProvider = ({ children }) => {
       if (state.currentChatRoom?.id === chatRoomId) {
         dispatch({ type: 'SET_CURRENT_CHAT_ROOM', payload: updatedRoom });
       }
-      toast.success('채팅방 제목이 변경되었습니다.');
     } catch (error) {
       handleError(error, '채팅방 제목 변경에 실패했습니다.');
     }
@@ -110,7 +106,6 @@ export const ChatProvider = ({ children }) => {
       if (state.currentChatRoom?.id === chatRoomId) {
         dispatch({ type: 'SET_CURRENT_CHAT_ROOM', payload: null });
       }
-      toast.success('채팅방이 삭제되었습니다.');
     } catch (error) {
       handleError(error, '채팅방 삭제에 실패했습니다.');
     }
@@ -132,7 +127,6 @@ export const ChatProvider = ({ children }) => {
   // 메시지 관련 액션들
   const sendMessage = async (content) => {
     if (!state.currentChatRoom) {
-      toast.error('채팅방을 선택해주세요.');
       return;
     }
 
@@ -151,7 +145,6 @@ export const ChatProvider = ({ children }) => {
     try {
       await chatService.deleteMessage(messageId);
       dispatch({ type: 'DELETE_MESSAGE', payload: messageId });
-      toast.success('메시지가 삭제되었습니다.');
     } catch (error) {
       handleError(error, '메시지 삭제에 실패했습니다.');
     }
@@ -187,3 +180,5 @@ export const useChat = () => {
   }
   return context;
 };
+
+export { ChatContext };

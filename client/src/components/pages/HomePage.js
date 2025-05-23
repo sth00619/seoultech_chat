@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import Layout from '../components/common/Layout';
-import Button from '../components/common/Button';
-import { ROUTES } from '../utils/constants';
+import { useAuth } from '../../hooks/useAuth';
+import Layout from '../../common/Layout';
+import Button from '../../common/Button';
+import { ROUTES } from '../../utils/constants';
 import { MessageCircle, Users, Zap, Shield, ArrowRight } from 'lucide-react';
 
 const HomePage = () => {

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import Button from '../common/Button';
-import ErrorMessage from '../common/ErrorMessage';
+import Button from '../../common/Button';
+import ErrorMessage from '../../common/ErrorMessage';
 import { User, Mail, Edit2, Save, X } from 'lucide-react';
 
 const UserProfile = () => {

@@ -1,9 +1,9 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import Layout from '../components/common/Layout';
-import ChatRoom from '../components/chat/ChatRoom';
-import { ROUTES } from '../utils/constants';
+import { useAuth } from '../../hooks/useAuth';
+import Layout from '../../common/Layout';
+import ChatRoom from '../chat/ChatRoom';
+import { ROUTES } from '../../utils/constants';
 
 const ChatPage = () => {
   const { isAuthenticated, loading } = useAuth();

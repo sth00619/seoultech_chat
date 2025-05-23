@@ -1,6 +1,5 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useReducer, useEffect } from 'react';
 import { authService } from '../services/authService';
-import { toast } from 'react-toastify';
 
 const AuthContext = createContext();
 
@@ -50,11 +49,9 @@ export const AuthProvider = ({ children }) => {
       dispatch({ type: 'SET_LOADING', payload: true });
       const result = await authService.login(email, password);
       dispatch({ type: 'SET_USER', payload: result.user });
-      toast.success('로그인에 성공했습니다.');
       return result;
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: error.message || '로그인에 실패했습니다.' });
-      toast.error(error.message || '로그인에 실패했습니다.');
       throw error;
     }
   };
@@ -63,11 +60,10 @@ export const AuthProvider = ({ children }) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       const result = await authService.register(userData);
-      toast.success('회원가입이 완료되었습니다.');
+      dispatch({ type: 'SET_LOADING', payload: false });
       return result;
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: error.message || '회원가입에 실패했습니다.' });
-      toast.error(error.message || '회원가입에 실패했습니다.');
       throw error;
     }
   };
@@ -75,7 +71,6 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     authService.logout();
     dispatch({ type: 'LOGOUT' });
-    toast.success('로그아웃되었습니다.');
   };
 
   const clearError = () => {
@@ -97,10 +92,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+export { AuthContext };
