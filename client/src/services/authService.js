@@ -11,9 +11,10 @@ export const authService = {
   async login(email, password) {
     try {
       const response = await api.post('/auth/login', { email, password });
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
+      if (response.data.user) {
+        // JWT 토큰 없이 사용자 정보만 저장
         localStorage.setItem('user', JSON.stringify(response.data.user));
+        localStorage.setItem('isAuthenticated', 'true');
       }
       return response.data;
     } catch (error) {
@@ -36,11 +37,11 @@ export const authService = {
   },
 
   isAuthenticated() {
-    return !!localStorage.getItem('token');
+    return localStorage.getItem('isAuthenticated') === 'true';
   },
 
   logout() {
-    localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('isAuthenticated');
   }
 };
