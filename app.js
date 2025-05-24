@@ -6,6 +6,7 @@ require('dotenv').config();
 
 // 라우트 import
 const userRoutes = require('./server/src/routes/userRoutes');
+const authRoutes = require('./server/src/routes/authRoutes');
 const chatRoutes = require('./server/src/routes/chatRoutes');
 const messageRoutes = require('./server/src/routes/messageRoutes');
 const errorHandler = require('./server/src/middleware/errorHandler');
@@ -31,6 +32,15 @@ const swaggerOptions = {
         description: 'Development server',
       },
     ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+    },
   },
   apis: ['./server/src/routes/*.js'],
 };
@@ -47,6 +57,7 @@ app.get('/', (req, res) => {
     endpoints: {
       docs: '/api-docs',
       health: '/health',
+      auth: '/api/auth',
       users: '/api/users',
       chatRooms: '/api/chat-rooms',
       messages: '/api/messages'
@@ -57,6 +68,7 @@ app.get('/', (req, res) => {
 });
 
 // API 라우트 설정
+app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/chat-rooms', chatRoutes);
 app.use('/api/messages', messageRoutes);
