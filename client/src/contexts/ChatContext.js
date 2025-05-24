@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer } from 'react';
+import React, { createContext, useContext, useReducer, useCallback } from 'react';
 import { chatService } from '../services/chatService';
 
 const ChatContext = createContext();
@@ -56,13 +56,13 @@ const initialState = {
 export const ChatProvider = ({ children }) => {
   const [state, dispatch] = useReducer(chatReducer, initialState);
 
-  const handleError = (error, defaultMessage) => {
+  const handleError = useCallback((error, defaultMessage) => {
     const message = error.response?.data?.error || error.message || defaultMessage;
     dispatch({ type: 'SET_ERROR', payload: message });
-  };
+  }, []);
 
-  // 채팅방 관련 액션들
-  const loadChatRooms = async (userId) => {
+  // 채팅방 관련 액션들 - useCallback으로 메모이제이션
+  const loadChatRooms = useCallback(async (userId) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       const chatRooms = await chatService.getChatRooms(userId);
@@ -72,21 +72,20 @@ export const ChatProvider = ({ children }) => {
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
-  };
+  }, [handleError]);
 
-  const createChatRoom = async (userId, title) => {
+  const createChatRoom = useCallback(async (userId, title) => {
     try {
-      const result = await chatService.createChatRoom(userId, title);
-      const newChatRoom = { id: result.id, title, user_id: userId, created_at: new Date() };
+      const newChatRoom = await chatService.createChatRoom(userId, title);
       dispatch({ type: 'ADD_CHAT_ROOM', payload: newChatRoom });
       return newChatRoom;
     } catch (error) {
       handleError(error, '채팅방 생성에 실패했습니다.');
       throw error;
     }
-  };
+  }, [handleError]);
 
-  const updateChatRoomTitle = async (chatRoomId, title) => {
+  const updateChatRoomTitle = useCallback(async (chatRoomId, title) => {
     try {
       await chatService.updateChatRoomTitle(chatRoomId, title);
       const updatedRoom = { ...state.currentChatRoom, title };
@@ -97,9 +96,9 @@ export const ChatProvider = ({ children }) => {
     } catch (error) {
       handleError(error, '채팅방 제목 변경에 실패했습니다.');
     }
-  };
+  }, [state.currentChatRoom, handleError]);
 
-  const deleteChatRoom = async (chatRoomId) => {
+  const deleteChatRoom = useCallback(async (chatRoomId) => {
     try {
       await chatService.deleteChatRoom(chatRoomId);
       dispatch({ type: 'DELETE_CHAT_ROOM', payload: chatRoomId });
@@ -109,9 +108,9 @@ export const ChatProvider = ({ children }) => {
     } catch (error) {
       handleError(error, '채팅방 삭제에 실패했습니다.');
     }
-  };
+  }, [state.currentChatRoom, handleError]);
 
-  const selectChatRoom = async (chatRoom) => {
+  const selectChatRoom = useCallback(async (chatRoom) => {
     try {
       dispatch({ type: 'SET_CURRENT_CHAT_ROOM', payload: chatRoom });
       dispatch({ type: 'SET_LOADING', payload: true });
@@ -122,10 +121,10 @@ export const ChatProvider = ({ children }) => {
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
-  };
+  }, [handleError]);
 
   // 메시지 관련 액션들
-  const sendMessage = async (content) => {
+  const sendMessage = useCallback(async (content) => {
     if (!state.currentChatRoom) {
       return;
     }
@@ -139,20 +138,20 @@ export const ChatProvider = ({ children }) => {
       handleError(error, '메시지 전송에 실패했습니다.');
       throw error;
     }
-  };
+  }, [state.currentChatRoom, handleError]);
 
-  const deleteMessage = async (messageId) => {
+  const deleteMessage = useCallback(async (messageId) => {
     try {
       await chatService.deleteMessage(messageId);
       dispatch({ type: 'DELETE_MESSAGE', payload: messageId });
     } catch (error) {
       handleError(error, '메시지 삭제에 실패했습니다.');
     }
-  };
+  }, [handleError]);
 
-  const clearError = () => {
+  const clearError = useCallback(() => {
     dispatch({ type: 'CLEAR_ERROR' });
-  };
+  }, []);
 
   const value = {
     ...state,
