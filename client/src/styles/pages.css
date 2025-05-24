@@ -390,6 +390,7 @@
   background: var(--bg-secondary);
 }
 
+/* 사이드바 스타일 수정 */
 .chat-sidebar {
   width: 0;
   background: var(--bg-primary);
@@ -398,8 +399,12 @@
   flex-direction: column;
   transition: width 0.3s ease;
   overflow: hidden;
-  position: relative;
-  z-index: 100;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  z-index: 200; /* z-index 증가 */
+  box-shadow: var(--shadow-lg);
 }
 
 .chat-sidebar.open {
@@ -413,6 +418,8 @@
   padding: 1rem;
   border-bottom: 1px solid var(--border-color);
   background: var(--bg-primary);
+  position: relative;
+  z-index: 201;
 }
 
 .sidebar-header h3 {
@@ -428,6 +435,8 @@
   padding: 0.5rem;
   border-radius: 4px;
   color: var(--text-secondary);
+  z-index: 202;
+  transition: background-color 0.2s ease;
 }
 
 .sidebar-close:hover {
@@ -437,11 +446,22 @@
 .sidebar-actions {
   padding: 1rem;
   border-bottom: 1px solid var(--border-color);
+  position: relative;
+  z-index: 201;
+}
+
+.sidebar-actions .btn {
+  position: relative;
+  z-index: 202;
+  cursor: pointer;
+  pointer-events: auto;
 }
 
 .sidebar-search {
   padding: 1rem;
   border-bottom: 1px solid var(--border-color);
+  position: relative;
+  z-index: 201;
 }
 
 .search-input-group {
@@ -455,6 +475,7 @@
   left: 0.75rem;
   color: var(--text-secondary);
   pointer-events: none;
+  z-index: 202;
 }
 
 .search-input {
@@ -465,6 +486,8 @@
   background: var(--bg-secondary);
   color: var(--text-primary);
   font-size: 0.875rem;
+  position: relative;
+  z-index: 202;
 }
 
 .search-input:focus {
@@ -475,6 +498,8 @@
 .sidebar-content {
   flex: 1;
   overflow-y: auto;
+  position: relative;
+  z-index: 201;
 }
 
 .chat-main {
@@ -482,6 +507,12 @@
   display: flex;
   flex-direction: column;
   position: relative;
+  margin-left: 0;
+  transition: margin-left 0.3s ease;
+}
+
+.chat-main.sidebar-open {
+  margin-left: 320px;
 }
 
 .chat-header {
@@ -509,6 +540,7 @@
   border-radius: 4px;
   color: var(--text-secondary);
   transition: all 0.2s ease;
+  z-index: 51;
 }
 
 .sidebar-toggle:hover {
@@ -643,6 +675,9 @@
   cursor: pointer;
   transition: all 0.2s ease;
   margin-bottom: 0.25rem;
+  position: relative;
+  z-index: 202;
+  pointer-events: auto;
 }
 
 .chat-list-item:hover {
@@ -907,6 +942,17 @@
   gap: 1rem;
 }
 
+/* 오버레이 스타일 개선 */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 199; /* 사이드바보다 낮게 설정 */
+}
+
 /* 반응형 디자인 */
 @media (max-width: 768px) {
   .hero-content {
@@ -929,11 +975,15 @@
   
   .chat-sidebar.open {
     width: 100%;
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     bottom: 0;
     z-index: 200;
+  }
+  
+  .chat-main.sidebar-open {
+    margin-left: 0;
   }
   
   .chat-header {

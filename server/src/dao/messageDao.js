@@ -12,6 +12,11 @@ class MessageDao {
     return rows;
   }
 
+  async getMessageById(id) {
+    const [rows] = await pool.query('SELECT * FROM messages WHERE id = ?', [id]);
+    return rows[0];
+  }
+
   async createMessage(messageData) {
     const { chat_room_id, role, content } = messageData;
     

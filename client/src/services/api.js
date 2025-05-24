@@ -8,13 +8,10 @@ const api = axios.create({
   },
 });
 
-// 요청 인터셉터
+// 요청 인터셉터 (JWT 제거)
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    // JWT 토큰 없이 요청 진행
     return config;
   },
   (error) => {
@@ -22,14 +19,16 @@ api.interceptors.request.use(
   }
 );
 
-// 응답 인터셉터
+// 응답 인터셉터 (JWT 제거)
 api.interceptors.response.use(
   (response) => {
     return response;
   },
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
+      // 인증 실패 시 로그아웃 처리
+      localStorage.removeItem('user');
+      localStorage.removeItem('isAuthenticated');
       window.location.href = '/login';
     }
     return Promise.reject(error);

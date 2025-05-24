@@ -30,6 +30,15 @@ class ChatRoomDao {
     return result.affectedRows;
   }
 
+  // 마지막 메시지 업데이트하는 새로운 메서드 추가
+  async updateChatRoomLastMessage(id, lastMessage) {
+    const [result] = await pool.query(
+      'UPDATE chat_rooms SET last_message = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [lastMessage, id]
+    );
+    return result.affectedRows;
+  }
+
   async deleteChatRoom(id) {
     const [result] = await pool.query(
       'UPDATE chat_rooms SET is_active = FALSE WHERE id = ?',

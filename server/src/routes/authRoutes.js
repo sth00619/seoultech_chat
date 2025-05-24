@@ -26,9 +26,6 @@ const router = express.Router();
  *         message:
  *           type: string
  *           example: "Login successful"
- *         token:
- *           type: string
- *           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
  *         user:
  *           type: object
  *           properties:
@@ -51,7 +48,7 @@ const router = express.Router();
  * /api/auth/login:
  *   post:
  *     summary: 사용자 로그인
- *     description: 이메일과 비밀번호로 로그인하고 JWT 토큰을 반환합니다.
+ *     description: 이메일과 비밀번호로 로그인합니다.
  *     tags: [Authentication]
  *     requestBody:
  *       required: true
@@ -110,22 +107,5 @@ router.post('/login', authController.login);
  *         description: 서버 내부 오류
  */
 router.post('/register', authController.register);
-
-/**
- * @swagger
- * /api/auth/verify:
- *   get:
- *     summary: JWT 토큰 검증
- *     description: Authorization 헤더의 JWT 토큰을 검증합니다.
- *     tags: [Authentication]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: 토큰 검증 성공
- *       401:
- *         description: 토큰이 없거나 유효하지 않음
- */
-router.get('/verify', authController.verifyToken);
 
 module.exports = router;

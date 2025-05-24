@@ -1,15 +1,17 @@
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const userDao = require('../dao/userDao');
 
 class AuthController {
-  // 로그인
+  // 간단한 로그인 (JWT 없이)
   async login(req, res) {
     try {
       const { email, password } = req.body;
+      
+      console.log('Login attempt:', { email, password }); // 디버깅용
 
       // 입력 검증
       if (!email || !password) {
+        console.log('Missing email or password');
         return res.status(400).json({ 
           error: 'Email and password are required' 
         });
@@ -17,36 +19,37 @@ class AuthController {
 
       // 사용자 조회
       const user = await userDao.getUserByEmail(email);
+      console.log('User found:', user ? { id: user.id, email: user.email } : 'Not found'); // 디버깅용
+      
       if (!user) {
+        console.log('User not found in database');
         return res.status(401).json({ 
           error: 'Invalid email or password' 
         });
       }
 
       // 비밀번호 확인
+      console.log('Comparing passwords...');
+      console.log('Input password:', password);
+      console.log('Stored hash:', user.password_hash);
+      
       const isValidPassword = await bcrypt.compare(password, user.password_hash);
+      console.log('Password comparison result:', isValidPassword); // 디버깅용
+      
       if (!isValidPassword) {
+        console.log('Password comparison failed');
         return res.status(401).json({ 
           error: 'Invalid email or password' 
         });
       }
 
-      // JWT 토큰 생성
-      const token = jwt.sign(
-        { 
-          userId: user.id, 
-          email: user.email 
-        },
-        process.env.JWT_SECRET || 'your-secret-key',
-        { expiresIn: '24h' }
-      );
-
-      // 응답 (비밀번호 제외)
+      // 응답 (비밀번호 제외, JWT 토큰 없이)
       const { password_hash, ...userWithoutPassword } = user;
+      
+      console.log('Login successful for user:', userWithoutPassword.email);
       
       res.json({
         message: 'Login successful',
-        token,
         user: userWithoutPassword
       });
 
@@ -56,7 +59,7 @@ class AuthController {
     }
   }
 
-  // 회원가입 (기존 userController에서 이동)
+  // 회원가입
   async register(req, res) {
     try {
       const { email, username, password_hash } = req.body;
@@ -98,32 +101,26 @@ class AuthController {
     }
   }
 
-  // 토큰 검증
-  async verifyToken(req, res) {
+  // 비밀번호 테스트용 메서드 (개발용)
+  async testPassword(req, res) {
     try {
-      const token = req.headers.authorization?.replace('Bearer ', '');
+      const { password } = req.body;
+      const testHash = '$2b$10$CwTycUXWue0Thq9StjUM0uJ4/WMhOyMRz2H7xk6LV8QXxYKJFuYlO';
       
-      if (!token) {
-        return res.status(401).json({ error: 'No token provided' });
-      }
-
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-      const user = await userDao.getUserById(decoded.userId);
+      console.log('Testing password:', password);
+      console.log('Against hash:', testHash);
       
-      if (!user) {
-        return res.status(401).json({ error: 'Invalid token' });
-      }
-
-      const { password_hash, ...userWithoutPassword } = user;
+      const result = await bcrypt.compare(password, testHash);
+      console.log('Test result:', result);
       
-      res.json({
-        valid: true,
-        user: userWithoutPassword
+      res.json({ 
+        password, 
+        hash: testHash, 
+        match: result 
       });
-
     } catch (error) {
-      console.error('Token verification error:', error);
-      res.status(401).json({ error: 'Invalid token' });
+      console.error('Password test error:', error);
+      res.status(500).json({ error: 'Test failed' });
     }
   }
 }
