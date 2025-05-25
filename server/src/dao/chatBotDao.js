@@ -1,12 +1,12 @@
+// server/src/dao/chatbotDao.js
 const pool = require('../config/database');
 
-class KnowledgeDao {
-  // 키워드를 기반으로 지식베이스에서 답변 검색 (기본 검색)
+class ChatbotDao {
+  // 키워드 기반 지식베이스 검색 (개선된 버전)
   async searchByKeywords(userMessage) {
     try {
-      console.log(`🔍 Searching knowledge base for: "${userMessage}"`);
+      console.log(`🔍 Searching with keywords: "${userMessage}"`);
       
-      // 사용자 메시지를 소문자로 변환하여 검색
       const searchQuery = userMessage.toLowerCase().trim();
       
       const [rows] = await pool.query(`
@@ -23,12 +23,19 @@ class KnowledgeDao {
           OR LOWER(kb.question) LIKE CONCAT('%', ?, '%')
           OR LOWER(kb.answer) LIKE CONCAT('%', ?, '%')
         )
-        ORDER BY kb.priority DESC, kb.id ASC
+        ORDER BY 
+          CASE 
+            WHEN LOWER(kb.keywords) LIKE CONCAT('%', ?, '%') THEN 1
+            WHEN LOWER(kb.question) LIKE CONCAT('%', ?, '%') THEN 2
+            ELSE 3
+          END,
+          kb.priority DESC, 
+          kb.id ASC
         LIMIT 1
-      `, [searchQuery, searchQuery, searchQuery]);
+      `, [searchQuery, searchQuery, searchQuery, searchQuery, searchQuery]);
       
       if (rows && rows.length > 0) {
-        console.log(`✅ Found match in searchByKeywords: ${rows[0].question}`);
+        console.log(`✅ Found match: [${rows[0].category_name}] ${rows[0].question}`);
         return rows[0];
       }
       
@@ -43,11 +50,11 @@ class KnowledgeDao {
   // 개별 키워드로 더 정확한 매칭 검색
   async searchByIndividualKeywords(userMessage) {
     try {
-      console.log(`🔍 Individual keyword search for: "${userMessage}"`);
+      console.log(`🔍 Individual keyword search: "${userMessage}"`);
       
-      // 사용자 메시지에서 키워드 추출 (2글자 이상)
+      // 사용자 메시지에서 키워드 추출 (2글자 이상, 한글/영문)
       const userKeywords = userMessage.toLowerCase()
-        .replace(/[^\w\sㄱ-힣]/g, ' ') // 특수문자 제거
+        .replace(/[^\w\sㄱ-힣]/g, ' ')
         .split(/\s+/)
         .filter(word => word.length >= 2);
       
@@ -58,27 +65,26 @@ class KnowledgeDao {
       
       console.log(`📝 Extracted keywords: ${userKeywords.join(', ')}`);
       
-      // 각 키워드에 대해 매칭 점수 계산
-      const keywordConditions = userKeywords.map(() => 
-        'LOWER(kb.keywords) LIKE CONCAT("%", ?, "%")'
-      ).join(' + ');
+      // 각 키워드가 포함된 항목 검색
+      const keywordLikes = userKeywords.map(() => 'LOWER(kb.keywords) LIKE CONCAT("%", ?, "%")').join(' + ');
+      const keywordOrs = userKeywords.map(() => 'LOWER(kb.keywords) LIKE CONCAT("%", ?, "%")').join(' OR ');
       
       const [rows] = await pool.query(`
         SELECT 
           kb.*,
           kc.name as category_name,
-          (${keywordConditions}) as match_count
+          (${keywordLikes}) as match_count
         FROM knowledge_base kb
         JOIN knowledge_categories kc ON kb.category_id = kc.id
         WHERE kb.is_active = TRUE 
         AND kc.is_active = TRUE
-        AND (${userKeywords.map(() => 'LOWER(kb.keywords) LIKE CONCAT("%", ?, "%")').join(' OR ')})
+        AND (${keywordOrs})
         ORDER BY match_count DESC, kb.priority DESC
         LIMIT 1
       `, [...userKeywords, ...userKeywords]);
       
       if (rows && rows.length > 0) {
-        console.log(`✅ Found match in searchByIndividualKeywords: ${rows[0].question} (score: ${rows[0].match_count})`);
+        console.log(`✅ Found match: [${rows[0].category_name}] ${rows[0].question} (score: ${rows[0].match_count})`);
         return rows[0];
       }
       
@@ -90,51 +96,53 @@ class KnowledgeDao {
     }
   }
 
-  // 정확한 키워드 매칭으로 답변 검색
-  async searchByExactKeywords(userMessage) {
+  // 단순 텍스트 매칭 (가장 관대한 검색)
+  async searchBySimpleText(userMessage) {
     try {
-      console.log(`🔍 Exact keyword search for: "${userMessage}"`);
+      console.log(`🔍 Simple text search: "${userMessage}"`);
       
-      const searchQuery = userMessage.toLowerCase();
+      const searchQuery = userMessage.toLowerCase().trim();
       
       const [rows] = await pool.query(`
         SELECT 
           kb.*,
-          kc.name as category_name,
-          CASE 
-            WHEN LOWER(kb.keywords) = ? THEN 100
-            WHEN LOWER(kb.keywords) LIKE CONCAT(?, '%') THEN 90
-            WHEN LOWER(kb.keywords) LIKE CONCAT('%', ?, '%') THEN 80
-            ELSE 70
-          END as match_score
+          kc.name as category_name
         FROM knowledge_base kb
         JOIN knowledge_categories kc ON kb.category_id = kc.id
         WHERE kb.is_active = TRUE 
         AND kc.is_active = TRUE
-        AND LOWER(kb.keywords) LIKE CONCAT('%', ?, '%')
-        ORDER BY match_score DESC, kb.priority DESC
-        LIMIT 3
-      `, [searchQuery, searchQuery, searchQuery, searchQuery]);
+        AND (
+          LOWER(CONCAT(kb.keywords, ' ', kb.question, ' ', kb.answer)) LIKE CONCAT('%', ?, '%')
+        )
+        ORDER BY 
+          CASE 
+            WHEN LOWER(kb.question) LIKE CONCAT('%', ?, '%') THEN 1
+            WHEN LOWER(kb.keywords) LIKE CONCAT('%', ?, '%') THEN 2
+            ELSE 3
+          END,
+          kb.priority DESC
+        LIMIT 1
+      `, [searchQuery, searchQuery, searchQuery]);
       
       if (rows && rows.length > 0) {
-        console.log(`✅ Found ${rows.length} matches in searchByExactKeywords`);
-        return rows;
+        console.log(`✅ Found match: [${rows[0].category_name}] ${rows[0].question}`);
+        return rows[0];
       }
       
-      console.log('❌ No match found in searchByExactKeywords');
-      return [];
+      console.log('❌ No match found in searchBySimpleText');
+      return null;
     } catch (error) {
-      console.error('❌ Error in searchByExactKeywords:', error);
-      return [];
+      console.error('❌ Error in searchBySimpleText:', error);
+      return null;
     }
   }
 
-  // 가장 강력한 검색 - 여러 전략을 순차적으로 시도
+  // 통합 검색 (모든 방법을 순차적으로 시도)
   async searchBestMatch(userMessage) {
     try {
-      console.log(`🎯 Starting comprehensive search for: "${userMessage}"`);
+      console.log(`🎯 Starting comprehensive search: "${userMessage}"`);
       
-      // 1단계: 완전 일치 또는 포함 검색
+      // 1단계: 개별 키워드 검색
       let result = await this.searchByIndividualKeywords(userMessage);
       if (result) {
         console.log('✅ Found in stage 1 (Individual keywords)');
@@ -163,48 +171,7 @@ class KnowledgeDao {
     }
   }
 
-  // 단순 텍스트 매칭 (가장 관대한 검색)
-  async searchBySimpleText(userMessage) {
-    try {
-      console.log(`🔍 Simple text search for: "${userMessage}"`);
-      
-      const searchQuery = userMessage.toLowerCase().trim();
-      
-      const [rows] = await pool.query(`
-        SELECT 
-          kb.*,
-          kc.name as category_name
-        FROM knowledge_base kb
-        JOIN knowledge_categories kc ON kb.category_id = kc.id
-        WHERE kb.is_active = TRUE 
-        AND kc.is_active = TRUE
-        AND (
-          LOWER(CONCAT(kb.keywords, ' ', kb.question, ' ', kb.answer)) LIKE CONCAT('%', ?, '%')
-        )
-        ORDER BY 
-          CASE 
-            WHEN LOWER(kb.question) LIKE CONCAT('%', ?, '%') THEN 1
-            WHEN LOWER(kb.keywords) LIKE CONCAT('%', ?, '%') THEN 2
-            ELSE 3
-          END,
-          kb.priority DESC
-        LIMIT 1
-      `, [searchQuery, searchQuery, searchQuery]);
-      
-      if (rows && rows.length > 0) {
-        console.log(`✅ Found match in searchBySimpleText: ${rows[0].question}`);
-        return rows[0];
-      }
-      
-      console.log('❌ No match found in searchBySimpleText');
-      return null;
-    } catch (error) {
-      console.error('❌ Error in searchBySimpleText:', error);
-      return null;
-    }
-  }
-
-  // 데이터베이스 연결 테스트
+  // 데이터베이스 연결 및 데이터 확인
   async testConnection() {
     try {
       console.log('🔌 Testing database connection...');
@@ -217,7 +184,7 @@ class KnowledgeDao {
         FROM information_schema.TABLES 
         WHERE TABLE_SCHEMA = ? 
         AND TABLE_NAME IN ('knowledge_base', 'knowledge_categories')
-      `, [process.env.DB_NAME]);
+      `, [process.env.DB_DATABASE]);
       
       console.log(`📋 Found tables: ${tables.map(t => t.TABLE_NAME).join(', ')}`);
       
@@ -339,4 +306,4 @@ class KnowledgeDao {
   }
 }
 
-module.exports = new KnowledgeDao();
+module.exports = new ChatbotDao();
