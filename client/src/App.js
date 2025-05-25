@@ -25,13 +25,12 @@ function App() {
           <Router>
             <div className="App">
               <Routes>
-                {/* 모든 라우트를 챗봇 페이지로 리다이렉트 */}
-                <Route path="*" element={<ChatPage />} />
-                <Route path={ROUTES.HOME} element={<ChatPage />} />
-                <Route path={ROUTES.LOGIN} element={<ChatPage />} />
-                <Route path={ROUTES.REGISTER} element={<ChatPage />} />
+                <Route path={ROUTES.HOME} element={<HomePage />} />
+                <Route path={ROUTES.LOGIN} element={<LoginPage />} />
+                <Route path={ROUTES.REGISTER} element={<RegisterPage />} />
                 <Route path={ROUTES.CHAT} element={<ChatPage />} />
-                <Route path={ROUTES.PROFILE} element={<ChatPage />} />
+                <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
+                <Route path="*" element={<HomePage />} />
               </Routes>
             </div>
           </Router>

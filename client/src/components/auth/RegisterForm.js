@@ -78,10 +78,11 @@ const RegisterForm = () => {
     if (!validateForm()) return;
     
     try {
+      // password_hash 대신 password로 전송
       await register({
         email: formData.email,
         username: formData.username,
-        password_hash: formData.password // 서버에서 해싱 처리
+        password: formData.password // password_hash가 아닌 password
       });
       navigate(ROUTES.LOGIN);
     } catch (err) {
