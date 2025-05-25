@@ -1,6 +1,5 @@
 const messageDao = require('../dao/messageDao');
 const chatRoomDao = require('../dao/chatRoomDao');
-const knowledgeDao = require('../dao/knowledgeDao');
 
 class MessageController {
   // 채팅방의 메시지 목록 조회
@@ -28,67 +27,8 @@ class MessageController {
     }
   }
 
-  // 환영 메시지 생성 (챗봇이 먼저 인사)
-  async createWelcomeMessage(req, res) {
-    try {
-      const { chat_room_id } = req.body;
-
-      if (!chat_room_id) {
-        return res.status(400).json({ error: 'chat_room_id is required' });
-      }
-
-      // 채팅방 존재 확인
-      const chatRoom = await chatRoomDao.getChatRoomById(chat_room_id);
-      if (!chatRoom) {
-        return res.status(404).json({ error: 'Chat room not found' });
-      }
-
-      // 이미 메시지가 있는지 확인 (중복 환영 메시지 방지)
-      const existingMessages = await messageDao.getMessagesByChatRoomId(chat_room_id, 1, 0);
-      if (existingMessages.length > 0) {
-        return res.json({ message: 'Welcome message already exists' });
-      }
-
-      // 환영 메시지 생성
-      const welcomeMessage = `안녕하세요! 서울과학기술대학교 AI 챗봇입니다. 🎓
-
-학교에 대한 궁금한 점이 있으시면 언제든 물어보세요!
-
-• 학과 및 전공 정보
-• 입학 및 진학 상담  
-• 취업 및 진로 안내
-• 캠퍼스 생활 정보
-
-어떤 것이 궁금하신가요?`;
-
-      // 봇 메시지 저장
-      const botMessageId = await messageDao.createMessage({
-        chat_room_id,
-        role: 'bot',
-        content: welcomeMessage
-      });
-
-      // 채팅방 마지막 메시지 업데이트
-      await chatRoomDao.updateChatRoomLastMessage(chat_room_id, '안녕하세요! 서울과학기술대학교 AI 챗봇입니다.');
-
-      // 저장된 메시지 조회해서 반환
-      const botMessage = await messageDao.getMessageById(botMessageId);
-
-      res.status(201).json({
-        message: 'Welcome message created successfully',
-        botMessage
-      });
-
-    } catch (error) {
-      console.error('Error creating welcome message:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  }
-
   // 새 메시지 전송 (사용자 메시지 + AI 응답)
   async sendMessage(req, res) {
-    const startTime = Date.now();
-    
     try {
       const { chat_room_id, content } = req.body;
 
@@ -110,18 +50,8 @@ class MessageController {
         content: content.trim()
       });
 
-      // 데이터베이스 기반 AI 응답 생성 (에러 처리 강화)
-      let botResponse, matchedKnowledge;
-      try {
-        const result = await this.generateBotResponseFromDB(content);
-        botResponse = result.response;
-        matchedKnowledge = result.matchedKnowledge;
-      } catch (dbError) {
-        console.error('Database response generation failed:', dbError);
-        // 데이터베이스 실패 시 기본 응답
-        botResponse = '죄송합니다. 일시적인 시스템 오류가 발생했습니다. 잠시 후 다시 시도해 주세요. 🤖';
-        matchedKnowledge = null;
-      }
+      // AI 응답 생성
+      const botResponse = await this.generateBotResponse(content);
 
       // 봇 메시지 저장
       const botMessageId = await messageDao.createMessage({
@@ -131,34 +61,15 @@ class MessageController {
       });
 
       // 채팅방 업데이트 시간 갱신 및 마지막 메시지 설정
-      const shortResponse = botResponse.length > 50 ? botResponse.substring(0, 50) + '...' : botResponse;
-      await chatRoomDao.updateChatRoomLastMessage(chat_room_id, shortResponse);
+      await chatRoomDao.updateChatRoomLastMessage(chat_room_id, botResponse);
 
       // 저장된 메시지들 조회해서 반환
       const userMessage = await messageDao.getMessageById(userMessageId);
       const botMessage = await messageDao.getMessageById(botMessageId);
 
-      // 채팅 분석 로그 저장 (에러가 나도 메시지 전송은 성공)
-      try {
-        const responseTime = Date.now() - startTime;
-        await knowledgeDao.logChatAnalytics(
-          content, 
-          botResponse, 
-          matchedKnowledge?.id || null, 
-          responseTime
-        );
-      } catch (logError) {
-        console.error('Failed to log analytics:', logError);
-      }
-
       res.status(201).json({
         userMessage,
-        botMessage,
-        matchedKnowledge: matchedKnowledge ? {
-          id: matchedKnowledge.id,
-          category: matchedKnowledge.category_name,
-          confidence: matchedKnowledge.match_count || 1
-        } : null
+        botMessage
       });
     } catch (error) {
       console.error('Error sending message:', error);
@@ -166,81 +77,50 @@ class MessageController {
     }
   }
 
-  // 데이터베이스 기반 AI 응답 생성 (에러 처리 강화)
-  async generateBotResponseFromDB(userMessage) {
+  // AI 응답 생성 (개선된 버전)
+  async generateBotResponse(userMessage) {
     try {
-      console.log(`🔍 Searching for response to: "${userMessage}"`);
+      // 메시지 내용에 따른 다양한 응답
+      const lowerMessage = userMessage.toLowerCase();
       
-      // 데이터베이스 연결 확인
-      try {
-        // 1차 시도: 개별 키워드 매칭 (가장 정확함)
-        let matchedKnowledge = await knowledgeDao.searchByIndividualKeywords(userMessage);
-        
-        if (matchedKnowledge) {
-          console.log(`✅ Found match (individual keywords): ${matchedKnowledge.question}`);
-          return {
-            response: matchedKnowledge.answer,
-            matchedKnowledge
-          };
-        }
-
-        // 2차 시도: 전체 키워드 검색
-        matchedKnowledge = await knowledgeDao.searchByKeywords(userMessage);
-        
-        if (matchedKnowledge) {
-          console.log(`✅ Found match (general search): ${matchedKnowledge.question}`);
-          return {
-            response: matchedKnowledge.answer,
-            matchedKnowledge
-          };
-        }
-
-        // 3차 시도: 정확한 키워드 매칭
-        const exactMatches = await knowledgeDao.searchByExactKeywords(userMessage);
-        
-        if (exactMatches && exactMatches.length > 0) {
-          console.log(`✅ Found match (exact keywords): ${exactMatches[0].question}`);
-          return {
-            response: exactMatches[0].answer,
-            matchedKnowledge: exactMatches[0]
-          };
-        }
-
-      } catch (dbError) {
-        console.error('Database search failed:', dbError);
-        // 데이터베이스 오류 시 기본 응답으로 폴백
+      if (lowerMessage.includes('안녕') || lowerMessage.includes('hello') || lowerMessage.includes('hi')) {
+        return `안녕하세요! 서울과학기술대학교 AI 챗봇입니다. 무엇을 도와드릴까요? 😊`;
       }
-
-      // 매칭되지 않은 경우 또는 DB 오류 시 기본 응답
-      console.log('❌ No match found or DB error, using default response');
-      const defaultResponses = this.getDefaultResponses();
-      const randomResponse = defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
       
-      return {
-        response: randomResponse,
-        matchedKnowledge: null
-      };
-
+      if (lowerMessage.includes('학교') || lowerMessage.includes('서울과기대') || lowerMessage.includes('seoultech')) {
+        return `서울과학기술대학교는 1910년에 설립된 국립 기술대학교입니다. 실용적인 기술 교육을 중시하며, 공학, IT, 디자인 등 다양한 분야에서 우수한 교육을 제공하고 있습니다. 구체적으로 어떤 것이 궁금하신가요?`;
+      }
+      
+      if (lowerMessage.includes('전공') || lowerMessage.includes('학과')) {
+        return `서울과학기술대학교에는 다양한 전공이 있습니다:\n\n• 공과대학: 기계공학과, 전기정보공학과, 컴퓨터공학과 등\n• IT대학: 컴퓨터공학과, 전자IT미디어공학과 등\n• 조형대학: 디자인학과, 도예학과 등\n• 인문사회대학: 영어영문학과, 행정학과 등\n\n어떤 전공에 대해 더 자세히 알고 싶으신가요?`;
+      }
+      
+      if (lowerMessage.includes('취업') || lowerMessage.includes('진로') || lowerMessage.includes('career')) {
+        return `서울과학기술대학교는 높은 취업률을 자랑합니다! 💼\n\n주요 진로 지원:\n• 산학협력을 통한 현장실습\n• 다양한 기업과의 채용연계 프로그램\n• 창업지원센터 운영\n• 취업박람회 정기 개최\n\n구체적인 전공별 취업 정보가 궁금하시면 말씀해 주세요!`;
+      }
+      
+      if (lowerMessage.includes('입학') || lowerMessage.includes('admission')) {
+        return `서울과학기술대학교 입학 정보를 안내해드릴게요! 📚\n\n주요 전형:\n• 수시모집: 학생부종합전형, 학생부교과전형\n• 정시모집: 수능 성적 반영\n• 특별전형: 특성화고교졸업자, 농어촌학생 등\n\n자세한 입학 정보는 대학 홈페이지에서 확인하실 수 있습니다.`;
+      }
+      
+      if (lowerMessage.includes('도움') || lowerMessage.includes('help')) {
+        return `저는 서울과학기술대학교에 대한 다양한 정보를 제공해드릴 수 있습니다! 🎓\n\n• 학교 소개 및 역사\n• 전공/학과 정보\n• 취업 및 진로 안내\n• 입학 정보\n• 캠퍼스 생활\n• 장학금 및 복지\n\n궁금한 것이 있으면 언제든 물어보세요!`;
+      }
+      
+      // 기본 응답들
+      const responses = [
+        `"${userMessage}"에 대해 더 자세히 알려드릴게요! 서울과학기술대학교 관련 질문이시라면 구체적으로 말씀해 주세요.`,
+        `흥미로운 질문이네요! "${userMessage}"와 관련하여 서울과학기술대학교의 어떤 정보가 궁금하신지 알려주시면 더 정확한 답변을 드릴 수 있습니다.`,
+        `좋은 질문입니다! "${userMessage}"에 대해 도움을 드리고 싶습니다. 학교, 전공, 취업, 입학 등 어떤 분야에 대한 질문인지 좀 더 구체적으로 말씀해 주세요.`,
+        `"${userMessage}"에 대한 답변을 준비했습니다! 서울과학기술대학교에서 제공하는 다양한 정보 중 어떤 것이 가장 궁금하신가요?`
+      ];
+      
+      return responses[Math.floor(Math.random() * responses.length)];
+      
     } catch (error) {
       console.error('Error generating bot response:', error);
-      
-      // 모든 것이 실패한 경우 최종 안전 응답
-      return {
-        response: '죄송합니다. 현재 시스템에 일시적인 문제가 있습니다. 잠시 후 다시 시도해 주시거나, 구체적인 질문을 해주시면 도움을 드리겠습니다. 😊',
-        matchedKnowledge: null
-      };
+      return '죄송합니다. 일시적인 오류가 발생했습니다. 다시 시도해 주세요.';
     }
-  }
-
-  // 기본 응답 메시지들 (knowledgeDao 연결 실패 시 사용)
-  getDefaultResponses() {
-    return [
-      `죄송합니다. 정확한 답변을 찾지 못했어요. 😅\n\n다음과 같은 주제로 질문해보시는 건 어떨까요?\n\n• 학교 소개 및 전공 정보\n• 입학 및 취업 정보\n• 캠퍼스 생활 및 시설\n• 학사 일정 및 장학금\n\n더 구체적으로 질문해주시면 정확한 답변을 드릴 수 있어요!`,
-      
-      `아직 해당 질문에 대한 정보가 준비되어 있지 않아요. 🤔\n\n**대신 이런 질문들을 시도해보세요:**\n• "서울과기대에 대해 알려주세요"\n• "컴퓨터공학과 정보가 궁금해요"\n• "입학 정보를 알려주세요"\n• "취업률이 어떻게 되나요?"\n\n더 많은 정보가 필요하시면 학교 홈페이지(www.seoultech.ac.kr)를 참고해주세요!`,
-      
-      `흥미로운 질문이네요! 하지만 정확한 정보를 찾지 못했습니다. 😊\n\n**서울과학기술대학교 관련 질문이라면:**\n• 학과/전공 관련 질문\n• 입학/진학 상담\n• 취업/진로 정보\n• 캠퍼스 생활 정보\n\n이런 주제들로 다시 질문해주시면 도움을 드릴 수 있어요!`
-    ];
   }
 
   // 메시지 삭제
@@ -255,124 +135,6 @@ class MessageController {
       res.json({ message: 'Message deleted successfully' });
     } catch (error) {
       console.error('Error deleting message:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  }
-
-  // 지식베이스 관리 (관리자용)
-  async getKnowledgeBase(req, res) {
-    try {
-      const { category } = req.query;
-      
-      let knowledge;
-      if (category) {
-        knowledge = await knowledgeDao.getKnowledgeByCategory(category);
-      } else {
-        knowledge = await knowledgeDao.getAllKnowledge();
-      }
-      
-      res.json(knowledge);
-    } catch (error) {
-      console.error('Error fetching knowledge base:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  }
-
-  // 새 지식베이스 추가 (관리자용)
-  async addKnowledge(req, res) {
-    try {
-      const { category_id, keywords, question, answer, priority = 1 } = req.body;
-      
-      if (!category_id || !keywords || !question || !answer) {
-        return res.status(400).json({ 
-          error: 'category_id, keywords, question, and answer are required' 
-        });
-      }
-      
-      const knowledgeId = await knowledgeDao.addKnowledge(
-        category_id, keywords, question, answer, priority
-      );
-      
-      res.status(201).json({ 
-        id: knowledgeId, 
-        message: 'Knowledge added successfully' 
-      });
-    } catch (error) {
-      console.error('Error adding knowledge:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  }
-
-  // 지식베이스 업데이트 (관리자용)
-  async updateKnowledge(req, res) {
-    try {
-      const { id } = req.params;
-      const updateData = req.body;
-      
-      const affectedRows = await knowledgeDao.updateKnowledge(id, updateData);
-      
-      if (affectedRows === 0) {
-        return res.status(404).json({ error: 'Knowledge not found' });
-      }
-      
-      res.json({ message: 'Knowledge updated successfully' });
-    } catch (error) {
-      console.error('Error updating knowledge:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  }
-
-  // 채팅 분석 데이터 조회 (관리자용)
-  async getChatAnalytics(req, res) {
-    try {
-      const { limit = 100, offset = 0 } = req.query;
-      
-      const [rows] = await require('../config/database').query(`
-        SELECT 
-          ca.*,
-          kb.question as matched_question,
-          kb.category_id,
-          kc.name as category_name
-        FROM chat_analytics ca
-        LEFT JOIN knowledge_base kb ON ca.matched_knowledge_id = kb.id
-        LEFT JOIN knowledge_categories kc ON kb.category_id = kc.id
-        ORDER BY ca.created_at DESC
-        LIMIT ? OFFSET ?
-      `, [parseInt(limit), parseInt(offset)]);
-      
-      res.json(rows);
-    } catch (error) {
-      console.error('Error fetching chat analytics:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  }
-
-  // 챗봇 테스트 (개발용)
-  async testChatbot(req, res) {
-    try {
-      const { message } = req.body;
-      
-      if (!message) {
-        return res.status(400).json({ error: 'Message is required' });
-      }
-      
-      const startTime = Date.now();
-      const { response, matchedKnowledge } = await this.generateBotResponseFromDB(message);
-      const responseTime = Date.now() - startTime;
-      
-      res.json({
-        userMessage: message,
-        botResponse: response,
-        matchedKnowledge: matchedKnowledge ? {
-          id: matchedKnowledge.id,
-          category: matchedKnowledge.category_name,
-          keywords: matchedKnowledge.keywords,
-          question: matchedKnowledge.question
-        } : null,
-        responseTime: `${responseTime}ms`
-      });
-    } catch (error) {
-      console.error('Error testing chatbot:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useChat } from '../../hooks/useChat';
 import { useAuth } from '../../hooks/useAuth';
 import MessageList from './MessageList';
@@ -6,7 +6,7 @@ import MessageInput from './MessageInput';
 import ChatSidebar from './ChatSidebar';
 import Loading from '../../common/Loading';
 import ErrorMessage from '../../common/ErrorMessage';
-import { Menu, Settings, MoreVertical, Download, Trash2 } from 'lucide-react';
+import { Menu, Settings, MoreVertical } from 'lucide-react';
 
 const ChatRoom = () => {
   const { user } = useAuth();
@@ -19,14 +19,12 @@ const ChatRoom = () => {
     loadChatRooms,
     clearError,
     createChatRoom,
-    selectChatRoom,
-    deleteChatRoom
+    selectChatRoom
   } = useChat();
   
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [hasLoadedChatRooms, setHasLoadedChatRooms] = useState(false);
-  const settingsRef = useRef(null);
 
   // useEffect를 안전하게 처리하기 위해 별도의 상태로 관리
   useEffect(() => {
@@ -35,23 +33,6 @@ const ChatRoom = () => {
       setHasLoadedChatRooms(true);
     }
   }, [user?.id, hasLoadedChatRooms, loadChatRooms]);
-
-  // 설정 드롭다운 외부 클릭 감지
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (settingsRef.current && !settingsRef.current.contains(event.target)) {
-        setSettingsOpen(false);
-      }
-    };
-
-    if (settingsOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [settingsOpen]);
 
   const handleSendMessage = useCallback(async (content) => {
     try {
@@ -63,12 +44,9 @@ const ChatRoom = () => {
 
   const handleToggleSidebar = useCallback(() => {
     setSidebarOpen(prev => !prev);
-    setSettingsOpen(false); // 사이드바 열 때 설정 메뉴 닫기
   }, []);
 
-  const handleToggleSettings = useCallback((e) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleToggleSettings = useCallback(() => {
     setSettingsOpen(prev => !prev);
   }, []);
 
@@ -93,60 +71,6 @@ const ChatRoom = () => {
     }
   }, [user?.id, createChatRoom, selectChatRoom]);
 
-  // 설정 메뉴 핸들러들
-  const handleExportChat = useCallback((e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (!currentChatRoom || messages.length === 0) {
-      alert('내보낼 메시지가 없습니다.');
-      return;
-    }
-
-    // 메시지들을 텍스트 형태로 변환
-    const chatData = messages.map(msg => 
-      `[${new Date(msg.created_at).toLocaleString()}] ${msg.role === 'user' ? '사용자' : 'AI'}: ${msg.content}`
-    ).join('\n');
-
-    // 파일 다운로드
-    const blob = new Blob([chatData], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${currentChatRoom.title}_${new Date().toISOString().split('T')[0]}.txt`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    
-    setSettingsOpen(false);
-  }, [currentChatRoom, messages]);
-
-  const handleDeleteChat = useCallback(async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (!currentChatRoom) return;
-
-    const confirmed = window.confirm(`"${currentChatRoom.title}" 채팅방을 정말 삭제하시겠습니까?`);
-    if (confirmed) {
-      try {
-        await deleteChatRoom(currentChatRoom.id);
-        setSettingsOpen(false);
-      } catch (error) {
-        console.error('Failed to delete chat room:', error);
-        alert('채팅방 삭제에 실패했습니다.');
-      }
-    }
-  }, [currentChatRoom, deleteChatRoom]);
-
-  const handleChatSettings = useCallback((e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    alert('채팅 설정 기능은 준비 중입니다.');
-    setSettingsOpen(false);
-  }, []);
-
   return (
     <div className="chat-room">
       {/* 사이드바 */}
@@ -164,7 +88,6 @@ const ChatRoom = () => {
               className="sidebar-toggle"
               onClick={handleToggleSidebar}
               title="채팅 목록"
-              type="button"
             >
               <Menu size={20} />
             </button>
@@ -178,42 +101,25 @@ const ChatRoom = () => {
             </div>
           </div>
           
-          <div className="chat-header-right" ref={settingsRef}>
+          <div className="chat-header-right">
             <button 
               className="chat-settings"
               onClick={handleToggleSettings}
               title="설정"
-              type="button"
             >
               <MoreVertical size={20} />
             </button>
             
             {settingsOpen && (
               <div className="settings-dropdown">
-                <button 
-                  className="dropdown-item"
-                  onClick={handleChatSettings}
-                  type="button"
-                >
+                <button className="dropdown-item">
                   <Settings size={16} />
                   채팅 설정
                 </button>
-                <button 
-                  className="dropdown-item"
-                  onClick={handleExportChat}
-                  disabled={!currentChatRoom || messages.length === 0}
-                  type="button"
-                >
-                  <Download size={16} />
+                <button className="dropdown-item">
                   대화 내보내기
                 </button>
-                <button 
-                  className="dropdown-item danger"
-                  onClick={handleDeleteChat}
-                  disabled={!currentChatRoom}
-                  type="button"
-                >
-                  <Trash2 size={16} />
+                <button className="dropdown-item danger">
                   채팅방 삭제
                 </button>
               </div>
@@ -269,7 +175,6 @@ const ChatRoom = () => {
                     className="btn btn-primary"
                     onClick={handleQuickStart}
                     style={{ padding: '0.75rem 1.5rem' }}
-                    type="button"
                   >
                     바로 시작하기
                   </button>
@@ -277,7 +182,6 @@ const ChatRoom = () => {
                     className="btn btn-outline"
                     onClick={handleToggleSidebar}
                     style={{ padding: '0.75rem 1.5rem' }}
-                    type="button"
                   >
                     채팅 목록 보기
                   </button>
