@@ -1,17 +1,15 @@
-const bcrypt = require('bcryptjs');
 const userDao = require('../dao/userDao');
 
 class AuthController {
-  // 간단한 로그인 (JWT 없이)
+  // 간단한 로그인 (평문 비밀번호)
   async login(req, res) {
     try {
       const { email, password } = req.body;
       
-      console.log('Login attempt:', { email, password }); // 디버깅용
+      console.log('Login attempt:', { email, password });
 
       // 입력 검증
       if (!email || !password) {
-        console.log('Missing email or password');
         return res.status(400).json({ 
           error: 'Email and password are required' 
         });
@@ -19,34 +17,28 @@ class AuthController {
 
       // 사용자 조회
       const user = await userDao.getUserByEmail(email);
-      console.log('User found:', user ? { id: user.id, email: user.email } : 'Not found'); // 디버깅용
+      console.log('User found:', user);
       
       if (!user) {
-        console.log('User not found in database');
         return res.status(401).json({ 
           error: 'Invalid email or password' 
         });
       }
 
-      // 비밀번호 확인
-      console.log('Comparing passwords...');
-      console.log('Input password:', password);
-      console.log('Stored hash:', user.password_hash);
-      
-      const isValidPassword = await bcrypt.compare(password, user.password_hash);
-      console.log('Password comparison result:', isValidPassword); // 디버깅용
-      
-      if (!isValidPassword) {
-        console.log('Password comparison failed');
+      // 평문 비밀번호 비교
+      if (password !== user.password_hash) {
+        console.log('Password mismatch');
+        console.log('Expected:', user.password_hash);
+        console.log('Received:', password);
         return res.status(401).json({ 
           error: 'Invalid email or password' 
         });
       }
 
-      // 응답 (비밀번호 제외, JWT 토큰 없이)
+      // 로그인 성공
       const { password_hash, ...userWithoutPassword } = user;
       
-      console.log('Login successful for user:', userWithoutPassword.email);
+      console.log('Login successful for:', userWithoutPassword.email);
       
       res.json({
         message: 'Login successful',
@@ -59,7 +51,7 @@ class AuthController {
     }
   }
 
-  // 회원가입
+  // 회원가입 (평문 비밀번호)
   async register(req, res) {
     try {
       const { email, username, password_hash } = req.body;
@@ -79,15 +71,11 @@ class AuthController {
         });
       }
 
-      // 비밀번호 해싱
-      const saltRounds = 10;
-      const hashedPassword = await bcrypt.hash(password_hash, saltRounds);
-
-      // 사용자 생성
+      // 사용자 생성 (평문 비밀번호 그대로 저장)
       const userId = await userDao.createUser({ 
         email, 
         username, 
-        password_hash: hashedPassword 
+        password_hash: password_hash // 평문 그대로 저장
       });
 
       res.status(201).json({ 
@@ -98,29 +86,6 @@ class AuthController {
     } catch (error) {
       console.error('Registration error:', error);
       res.status(500).json({ error: 'Internal server error' });
-    }
-  }
-
-  // 비밀번호 테스트용 메서드 (개발용)
-  async testPassword(req, res) {
-    try {
-      const { password } = req.body;
-      const testHash = '$2b$10$CwTycUXWue0Thq9StjUM0uJ4/WMhOyMRz2H7xk6LV8QXxYKJFuYlO';
-      
-      console.log('Testing password:', password);
-      console.log('Against hash:', testHash);
-      
-      const result = await bcrypt.compare(password, testHash);
-      console.log('Test result:', result);
-      
-      res.json({ 
-        password, 
-        hash: testHash, 
-        match: result 
-      });
-    } catch (error) {
-      console.error('Password test error:', error);
-      res.status(500).json({ error: 'Test failed' });
     }
   }
 }

@@ -61,8 +61,10 @@ export const ChatProvider = ({ children }) => {
     dispatch({ type: 'SET_ERROR', payload: message });
   }, []);
 
-  // 채팅방 관련 액션들 - useCallback으로 메모이제이션
+  // 채팅방 관련 액션들
   const loadChatRooms = useCallback(async (userId) => {
+    if (!userId) return;
+    
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       const chatRooms = await chatService.getChatRooms(userId);
@@ -75,6 +77,11 @@ export const ChatProvider = ({ children }) => {
   }, [handleError]);
 
   const createChatRoom = useCallback(async (userId, title) => {
+    if (!userId) {
+      handleError(new Error('로그인이 필요합니다.'), '로그인이 필요합니다.');
+      return;
+    }
+    
     try {
       const newChatRoom = await chatService.createChatRoom(userId, title);
       dispatch({ type: 'ADD_CHAT_ROOM', payload: newChatRoom });
@@ -126,6 +133,7 @@ export const ChatProvider = ({ children }) => {
   // 메시지 관련 액션들
   const sendMessage = useCallback(async (content) => {
     if (!state.currentChatRoom) {
+      handleError(new Error('채팅방을 선택해주세요.'), '채팅방을 선택해주세요.');
       return;
     }
 
@@ -133,6 +141,15 @@ export const ChatProvider = ({ children }) => {
       const response = await chatService.sendMessage(state.currentChatRoom.id, content);
       dispatch({ type: 'ADD_MESSAGE', payload: response.userMessage });
       dispatch({ type: 'ADD_MESSAGE', payload: response.botMessage });
+      
+      // 채팅방 목록의 마지막 메시지 업데이트
+      const updatedRoom = {
+        ...state.currentChatRoom,
+        last_message: response.botMessage.content.substring(0, 50) + '...',
+        updated_at: new Date().toISOString()
+      };
+      dispatch({ type: 'UPDATE_CHAT_ROOM', payload: updatedRoom });
+      
       return response;
     } catch (error) {
       handleError(error, '메시지 전송에 실패했습니다.');
