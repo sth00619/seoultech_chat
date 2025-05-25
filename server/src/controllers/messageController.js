@@ -1,6 +1,6 @@
 const messageDao = require('../dao/messageDao');
 const chatRoomDao = require('../dao/chatRoomDao');
-const knowledgeDao = require('../dao/knowledgeDao');
+const chatbotDao = require('../dao/chatBotDao'); // 새로 추가된 DAO
 
 class MessageController {
   // 채팅방의 메시지 목록 조회
@@ -85,7 +85,7 @@ class MessageController {
     }
   }
 
-  // 새 메시지 전송 (사용자 메시지 + AI 응답)
+  // 새 메시지 전송 (사용자 메시지 + AI 응답) - 개선된 버전
   async sendMessage(req, res) {
     const startTime = Date.now();
     
@@ -103,6 +103,8 @@ class MessageController {
         return res.status(404).json({ error: 'Chat room not found' });
       }
 
+      console.log(`📥 User message received: "${content}"`);
+
       // 사용자 메시지 저장
       const userMessageId = await messageDao.createMessage({
         chat_room_id,
@@ -110,14 +112,16 @@ class MessageController {
         content: content.trim()
       });
 
-      // 데이터베이스 기반 AI 응답 생성 (에러 처리 강화)
+      // 데이터베이스 기반 AI 응답 생성 (강화된 버전)
       let botResponse, matchedKnowledge;
       try {
+        console.log('🤖 Generating bot response...');
         const result = await this.generateBotResponseFromDB(content);
         botResponse = result.response;
         matchedKnowledge = result.matchedKnowledge;
+        console.log(`📤 Bot response generated: "${botResponse.substring(0, 100)}..."`);
       } catch (dbError) {
-        console.error('Database response generation failed:', dbError);
+        console.error('❌ Database response generation failed:', dbError);
         // 데이터베이스 실패 시 기본 응답
         botResponse = '죄송합니다. 일시적인 시스템 오류가 발생했습니다. 잠시 후 다시 시도해 주세요. 🤖';
         matchedKnowledge = null;
@@ -141,7 +145,7 @@ class MessageController {
       // 채팅 분석 로그 저장 (에러가 나도 메시지 전송은 성공)
       try {
         const responseTime = Date.now() - startTime;
-        await knowledgeDao.logChatAnalytics(
+        await chatbotDao.logChatAnalytics(
           content, 
           botResponse, 
           matchedKnowledge?.id || null, 
@@ -166,81 +170,132 @@ class MessageController {
     }
   }
 
-  // 데이터베이스 기반 AI 응답 생성 (에러 처리 강화)
+  // 데이터베이스 기반 AI 응답 생성 (완전히 새로운 버전)
   async generateBotResponseFromDB(userMessage) {
     try {
-      console.log(`🔍 Searching for response to: "${userMessage}"`);
+      console.log(`🔍 Starting DB search for: "${userMessage}"`);
       
-      // 데이터베이스 연결 확인
-      try {
-        // 1차 시도: 개별 키워드 매칭 (가장 정확함)
-        let matchedKnowledge = await knowledgeDao.searchByIndividualKeywords(userMessage);
-        
-        if (matchedKnowledge) {
-          console.log(`✅ Found match (individual keywords): ${matchedKnowledge.question}`);
-          return {
-            response: matchedKnowledge.answer,
-            matchedKnowledge
-          };
-        }
-
-        // 2차 시도: 전체 키워드 검색
-        matchedKnowledge = await knowledgeDao.searchByKeywords(userMessage);
-        
-        if (matchedKnowledge) {
-          console.log(`✅ Found match (general search): ${matchedKnowledge.question}`);
-          return {
-            response: matchedKnowledge.answer,
-            matchedKnowledge
-          };
-        }
-
-        // 3차 시도: 정확한 키워드 매칭
-        const exactMatches = await knowledgeDao.searchByExactKeywords(userMessage);
-        
-        if (exactMatches && exactMatches.length > 0) {
-          console.log(`✅ Found match (exact keywords): ${exactMatches[0].question}`);
-          return {
-            response: exactMatches[0].answer,
-            matchedKnowledge: exactMatches[0]
-          };
-        }
-
-      } catch (dbError) {
-        console.error('Database search failed:', dbError);
-        // 데이터베이스 오류 시 기본 응답으로 폴백
+      // 먼저 데이터베이스 연결 및 데이터 확인
+      const isReady = await chatbotDao.testConnection();
+      if (!isReady) {
+        console.log('❌ Database not ready, using fallback response');
+        return this.getFallbackResponse();
       }
 
-      // 매칭되지 않은 경우 또는 DB 오류 시 기본 응답
-      console.log('❌ No match found or DB error, using default response');
-      const defaultResponses = this.getDefaultResponses();
-      const randomResponse = defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+      // 1차 시도: 통합 검색 (가장 강력한 검색)
+      let matchedKnowledge = await chatbotDao.searchBestMatch(userMessage);
       
-      return {
-        response: randomResponse,
-        matchedKnowledge: null
-      };
+      if (matchedKnowledge) {
+        console.log(`✅ Found match with searchBestMatch: ${matchedKnowledge.question}`);
+        return {
+          response: matchedKnowledge.answer,
+          matchedKnowledge
+        };
+      }
+
+      // 2차 시도: 개별 키워드 매칭
+      matchedKnowledge = await chatbotDao.searchByIndividualKeywords(userMessage);
+      
+      if (matchedKnowledge) {
+        console.log(`✅ Found match with searchByIndividualKeywords: ${matchedKnowledge.question}`);
+        return {
+          response: matchedKnowledge.answer,
+          matchedKnowledge
+        };
+      }
+
+      // 3차 시도: 기본 키워드 검색
+      matchedKnowledge = await chatbotDao.searchByKeywords(userMessage);
+      
+      if (matchedKnowledge) {
+        console.log(`✅ Found match with searchByKeywords: ${matchedKnowledge.question}`);
+        return {
+          response: matchedKnowledge.answer,
+          matchedKnowledge
+        };
+      }
+
+      // 4차 시도: 단순 텍스트 매칭
+      matchedKnowledge = await chatbotDao.searchBySimpleText(userMessage);
+      
+      if (matchedKnowledge) {
+        console.log(`✅ Found match with searchBySimpleText: ${matchedKnowledge.question}`);
+        return {
+          response: matchedKnowledge.answer,
+          matchedKnowledge
+        };
+      }
+
+      // 모든 검색 실패 시 기본 응답
+      console.log('❌ No match found in any search method, using default response');
+      return this.getDefaultResponse();
 
     } catch (error) {
-      console.error('Error generating bot response:', error);
-      
-      // 모든 것이 실패한 경우 최종 안전 응답
-      return {
-        response: '죄송합니다. 현재 시스템에 일시적인 문제가 있습니다. 잠시 후 다시 시도해 주시거나, 구체적인 질문을 해주시면 도움을 드리겠습니다. 😊',
-        matchedKnowledge: null
-      };
+      console.error('❌ Error in generateBotResponseFromDB:', error);
+      return this.getFallbackResponse();
     }
   }
 
-  // 기본 응답 메시지들 (knowledgeDao 연결 실패 시 사용)
-  getDefaultResponses() {
-    return [
-      `죄송합니다. 정확한 답변을 찾지 못했어요. 😅\n\n다음과 같은 주제로 질문해보시는 건 어떨까요?\n\n• 학교 소개 및 전공 정보\n• 입학 및 취업 정보\n• 캠퍼스 생활 및 시설\n• 학사 일정 및 장학금\n\n더 구체적으로 질문해주시면 정확한 답변을 드릴 수 있어요!`,
-      
-      `아직 해당 질문에 대한 정보가 준비되어 있지 않아요. 🤔\n\n**대신 이런 질문들을 시도해보세요:**\n• "서울과기대에 대해 알려주세요"\n• "컴퓨터공학과 정보가 궁금해요"\n• "입학 정보를 알려주세요"\n• "취업률이 어떻게 되나요?"\n\n더 많은 정보가 필요하시면 학교 홈페이지(www.seoultech.ac.kr)를 참고해주세요!`,
-      
-      `흥미로운 질문이네요! 하지만 정확한 정보를 찾지 못했습니다. 😊\n\n**서울과학기술대학교 관련 질문이라면:**\n• 학과/전공 관련 질문\n• 입학/진학 상담\n• 취업/진로 정보\n• 캠퍼스 생활 정보\n\n이런 주제들로 다시 질문해주시면 도움을 드릴 수 있어요!`
+  // 기본 응답 (검색 결과 없을 때)
+  getDefaultResponse() {
+    const defaultResponses = [
+      `죄송합니다. 정확한 답변을 찾지 못했어요. 😅
+
+다음과 같은 주제로 질문해보시는 건 어떨까요?
+
+• **"안녕하세요"** - 인사하기
+• **"서울과기대 소개"** - 학교 소개  
+• **"컴퓨터공학과"** - 전공 정보
+• **"입학 정보"** - 입학 안내
+• **"취업률"** - 취업 정보
+• **"캠퍼스 시설"** - 시설 안내
+
+더 구체적으로 질문해주시면 정확한 답변을 드릴 수 있어요!`,
+
+      `아직 해당 질문에 대한 정보가 준비되어 있지 않아요. 🤔
+
+**대신 이런 질문들을 시도해보세요:**
+• "서울과기대에 대해 알려주세요"
+• "어떤 전공이 있나요?"
+• "입학 정보를 알려주세요"  
+• "취업률이 어떻게 되나요?"
+• "캠퍼스 생활은 어떤가요?"
+
+더 많은 정보가 필요하시면 학교 홈페이지(www.seoultech.ac.kr)를 참고해주세요!`,
+
+      `흥미로운 질문이네요! 하지만 정확한 정보를 찾지 못했습니다. 😊
+
+**서울과학기술대학교 관련 질문이라면:**
+• 학과/전공 관련 질문
+• 입학/진학 상담  
+• 취업/진로 정보
+• 캠퍼스 생활 정보
+
+이런 주제들로 다시 질문해주시면 도움을 드릴 수 있어요!`
     ];
+
+    const randomResponse = defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+    
+    return {
+      response: randomResponse,
+      matchedKnowledge: null
+    };
+  }
+
+  // 시스템 오류 시 폴백 응답
+  getFallbackResponse() {
+    return {
+      response: `죄송합니다. 현재 시스템에 일시적인 문제가 있습니다. 😔
+
+**다시 시도해주시거나, 다음과 같이 질문해보세요:**
+• "안녕하세요"
+• "서울과기대 소개"
+• "전공 정보"
+• "입학 안내"
+
+시스템이 복구되면 더 정확한 답변을 드릴 수 있습니다.`,
+      matchedKnowledge: null
+    };
   }
 
   // 메시지 삭제
@@ -266,9 +321,9 @@ class MessageController {
       
       let knowledge;
       if (category) {
-        knowledge = await knowledgeDao.getKnowledgeByCategory(category);
+        knowledge = await chatbotDao.getKnowledgeByCategory(category);
       } else {
-        knowledge = await knowledgeDao.getAllKnowledge();
+        knowledge = await chatbotDao.getAllKnowledge();
       }
       
       res.json(knowledge);
@@ -289,7 +344,7 @@ class MessageController {
         });
       }
       
-      const knowledgeId = await knowledgeDao.addKnowledge(
+      const knowledgeId = await chatbotDao.addKnowledge(
         category_id, keywords, question, answer, priority
       );
       
@@ -309,7 +364,7 @@ class MessageController {
       const { id } = req.params;
       const updateData = req.body;
       
-      const affectedRows = await knowledgeDao.updateKnowledge(id, updateData);
+      const affectedRows = await chatbotDao.updateKnowledge(id, updateData);
       
       if (affectedRows === 0) {
         return res.status(404).json({ error: 'Knowledge not found' });
@@ -347,7 +402,7 @@ class MessageController {
     }
   }
 
-  // 챗봇 테스트 (개발용)
+  // 챗봇 테스트 (개발용) - 강화된 버전
   async testChatbot(req, res) {
     try {
       const { message } = req.body;
@@ -356,9 +411,13 @@ class MessageController {
         return res.status(400).json({ error: 'Message is required' });
       }
       
+      console.log(`🧪 Testing chatbot with message: "${message}"`);
+      
       const startTime = Date.now();
       const { response, matchedKnowledge } = await this.generateBotResponseFromDB(message);
       const responseTime = Date.now() - startTime;
+      
+      console.log(`🧪 Test completed in ${responseTime}ms`);
       
       res.json({
         userMessage: message,
@@ -367,9 +426,12 @@ class MessageController {
           id: matchedKnowledge.id,
           category: matchedKnowledge.category_name,
           keywords: matchedKnowledge.keywords,
-          question: matchedKnowledge.question
+          question: matchedKnowledge.question,
+          priority: matchedKnowledge.priority
         } : null,
-        responseTime: `${responseTime}ms`
+        responseTime: `${responseTime}ms`,
+        timestamp: new Date().toISOString(),
+        searchStrategy: matchedKnowledge ? 'database_match' : 'default_response'
       });
     } catch (error) {
       console.error('Error testing chatbot:', error);
