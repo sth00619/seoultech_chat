@@ -19,7 +19,7 @@ class UserDao {
   async createUser(userData) {
     const { email, username, password_hash } = userData;
     const [result] = await pool.query(
-      'INSERT INTO users (email, username, password_hash) VALUES (?, ?, ?)',
+      'INSERT INTO users (email, username, password) VALUES (?, ?, ?)',
       [email, username, password_hash]
     );
     return result.insertId;

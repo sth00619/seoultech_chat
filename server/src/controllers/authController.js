@@ -25,10 +25,10 @@ class AuthController {
         });
       }
 
-      // 평문 비밀번호 비교
-      if (password !== user.password_hash) {
+      // 평문 비밀번호 비교 - password 컬럼 사용
+      if (password !== user.password) {
         console.log('Password mismatch');
-        console.log('Expected:', user.password_hash);
+        console.log('Expected:', user.password);
         console.log('Received:', password);
         return res.status(401).json({ 
           error: 'Invalid email or password' 
@@ -36,7 +36,7 @@ class AuthController {
       }
 
       // 로그인 성공
-      const { password_hash, ...userWithoutPassword } = user;
+      const { password: userPassword, ...userWithoutPassword } = user;
       
       console.log('Login successful for:', userWithoutPassword.email);
       
@@ -54,10 +54,10 @@ class AuthController {
   // 회원가입 (평문 비밀번호)
   async register(req, res) {
     try {
-      const { email, username, password_hash } = req.body;
+      const { email, username, password } = req.body;
 
       // 입력 검증
-      if (!email || !username || !password_hash) {
+      if (!email || !username || !password) {
         return res.status(400).json({ 
           error: 'Email, username, and password are required' 
         });
@@ -75,7 +75,7 @@ class AuthController {
       const userId = await userDao.createUser({ 
         email, 
         username, 
-        password_hash: password_hash // 평문 그대로 저장
+        password_hash: password // password_hash로 전달하지만 DAO에서 password 컬럼에 저장
       });
 
       res.status(201).json({ 

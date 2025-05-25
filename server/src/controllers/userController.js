@@ -31,7 +31,7 @@ class UserController {
   // 새 사용자 생성
   async createUser(req, res) {
     try {
-      const { email, username, password_hash } = req.body;
+      const { email, username, password } = req.body;
       
       // 이메일 중복 체크
       const existingUser = await userDao.getUserByEmail(email);
@@ -39,7 +39,11 @@ class UserController {
         return res.status(400).json({ error: 'Email already exists' });
       }
 
-      const userId = await userDao.createUser({ email, username, password_hash });
+      const userId = await userDao.createUser({ 
+        email, 
+        username, 
+        password_hash: password // password_hash 컬럼에 평문 비밀번호 저장
+      });
       res.status(201).json({ id: userId, message: 'User created successfully' });
     } catch (error) {
       console.error('Error creating user:', error);
