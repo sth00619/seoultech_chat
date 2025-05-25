@@ -83,6 +83,40 @@ const router = express.Router();
 
 /**
  * @swagger
+ * /api/messages/help:
+ *   get:
+ *     summary: 챗봇 도움말 조회
+ *     description: 챗봇이 답변할 수 있는 주제와 카테고리 목록을 조회합니다.
+ *     tags: [Messages]
+ *     responses:
+ *       200:
+ *         description: 도움말 조회 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: 도움말 메시지
+ *                 categories:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       name:
+ *                         type: string
+ *                       description:
+ *                         type: string
+ *       500:
+ *         description: 서버 내부 오류
+ */
+router.get('/help', messageController.getHelp);
+
+/**
+ * @swagger
  * /api/messages/chat-room/{chatRoomId}:
  *   get:
  *     summary: 채팅방의 메시지 목록 조회

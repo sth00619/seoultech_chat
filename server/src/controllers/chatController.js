@@ -1,4 +1,5 @@
 const chatRoomDao = require('../dao/chatRoomDao');
+const messageDao = require('../dao/messageDao');
 
 class ChatController {
   async getChatRoomsByUser(req, res) {
@@ -16,9 +17,29 @@ class ChatController {
   async createChatRoom(req, res) {
     try {
       const { userId, title } = req.body;
-      // DAO 메서드 호출
+      
+      // 채팅방 생성
       const chatRoomId = await chatRoomDao.createChatRoom(userId, title);
-      res.status(201).json({ id: chatRoomId, message: 'Chat room created successfully' });
+      
+      // 환영 메시지 자동 추가
+      const welcomeMessage = '안녕하세요! 서울과학기술대학교 AI 챗봇입니다. 🎓\n\n학교에 대한 궁금한 점이 있으시면 언제든 물어보세요!\n\n• 학과 및 전공 정보\n• 입학 및 진학 상담\n• 취업 및 진로 안내\n• 캠퍼스 생활 정보\n\n어떤 것이 궁금하신가요?';
+      
+      await messageDao.createMessage({
+        chat_room_id: chatRoomId,
+        role: 'bot',
+        content: welcomeMessage
+      });
+      
+      // 채팅방의 마지막 메시지 업데이트
+      await chatRoomDao.updateChatRoomLastMessage(
+        chatRoomId, 
+        '안녕하세요! 서울과학기술대학교 AI 챗봇입니다. 🎓'
+      );
+      
+      // 생성된 채팅방 정보 조회해서 반환
+      const chatRoom = await chatRoomDao.getChatRoomById(chatRoomId);
+      
+      res.status(201).json(chatRoom);
     } catch (error) {
       console.error('Error creating chat room:', error);
       res.status(500).json({ error: 'Internal server error' });
