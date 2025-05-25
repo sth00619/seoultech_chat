@@ -577,6 +577,29 @@
   background: var(--bg-secondary);
 }
 
+/* 채팅 헤더 오른쪽 설정 관련 스타일 개선 */
+.chat-header-right {
+  position: relative;
+  z-index: 100;
+}
+
+.chat-settings {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+  z-index: 101;
+  position: relative;
+}
+
+.chat-settings:hover {
+  background: var(--bg-secondary);
+  color: var(--primary-color);
+}
+
 .settings-dropdown {
   position: absolute;
   top: 100%;
@@ -584,23 +607,67 @@
   margin-top: 0.5rem;
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
-  border-radius: 6px;
-  box-shadow: var(--shadow-lg);
-  min-width: 180px;
-  z-index: 1000;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  z-index: 1001;
+  animation: slideDown 0.2s ease;
+  overflow: hidden;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .settings-dropdown .dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
   padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  text-align: left;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
   font-size: 0.875rem;
+  text-decoration: none;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.settings-dropdown .dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.settings-dropdown .dropdown-item:hover:not(:disabled) {
+  background-color: var(--bg-secondary);
+}
+
+.settings-dropdown .dropdown-item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .settings-dropdown .dropdown-item.danger {
   color: var(--danger-color);
 }
 
-.settings-dropdown .dropdown-item.danger:hover {
+.settings-dropdown .dropdown-item.danger:hover:not(:disabled) {
   background: #fff5f5;
+  color: var(--danger-color);
+}
+
+/* 아이콘 스타일 */
+.settings-dropdown .dropdown-item svg {
+  flex-shrink: 0;
 }
 
 .chat-content {
