@@ -1,13 +1,11 @@
 const pool = require('../config/database');
 
 class KnowledgeDao {
-  // 키워드를 기반으로 지식베이스에서 답변 검색 (기본 검색)
+  // 키워드를 기반으로 지식베이스에서 답변 검색
   async searchByKeywords(userMessage) {
     try {
-      console.log(`🔍 Searching knowledge base for: "${userMessage}"`);
-      
       // 사용자 메시지를 소문자로 변환하여 검색
-      const searchQuery = userMessage.toLowerCase().trim();
+      const searchQuery = userMessage.toLowerCase();
       
       const [rows] = await pool.query(`
         SELECT 
@@ -19,7 +17,7 @@ class KnowledgeDao {
         WHERE kb.is_active = TRUE 
         AND kc.is_active = TRUE
         AND (
-          LOWER(kb.keywords) LIKE CONCAT('%', ?, '%')
+          ? REGEXP REPLACE(kb.keywords, ',', '|')
           OR LOWER(kb.question) LIKE CONCAT('%', ?, '%')
           OR LOWER(kb.answer) LIKE CONCAT('%', ?, '%')
         )
@@ -27,65 +25,9 @@ class KnowledgeDao {
         LIMIT 1
       `, [searchQuery, searchQuery, searchQuery]);
       
-      if (rows && rows.length > 0) {
-        console.log(`✅ Found match in searchByKeywords: ${rows[0].question}`);
-        return rows[0];
-      }
-      
-      console.log('❌ No match found in searchByKeywords');
-      return null;
+      return rows[0] || null;
     } catch (error) {
-      console.error('❌ Error in searchByKeywords:', error);
-      return null;
-    }
-  }
-
-  // 개별 키워드로 더 정확한 매칭 검색
-  async searchByIndividualKeywords(userMessage) {
-    try {
-      console.log(`🔍 Individual keyword search for: "${userMessage}"`);
-      
-      // 사용자 메시지에서 키워드 추출 (2글자 이상)
-      const userKeywords = userMessage.toLowerCase()
-        .replace(/[^\w\sㄱ-힣]/g, ' ') // 특수문자 제거
-        .split(/\s+/)
-        .filter(word => word.length >= 2);
-      
-      if (userKeywords.length === 0) {
-        console.log('❌ No valid keywords found');
-        return null;
-      }
-      
-      console.log(`📝 Extracted keywords: ${userKeywords.join(', ')}`);
-      
-      // 각 키워드에 대해 매칭 점수 계산
-      const keywordConditions = userKeywords.map(() => 
-        'LOWER(kb.keywords) LIKE CONCAT("%", ?, "%")'
-      ).join(' + ');
-      
-      const [rows] = await pool.query(`
-        SELECT 
-          kb.*,
-          kc.name as category_name,
-          (${keywordConditions}) as match_count
-        FROM knowledge_base kb
-        JOIN knowledge_categories kc ON kb.category_id = kc.id
-        WHERE kb.is_active = TRUE 
-        AND kc.is_active = TRUE
-        AND (${userKeywords.map(() => 'LOWER(kb.keywords) LIKE CONCAT("%", ?, "%")').join(' OR ')})
-        ORDER BY match_count DESC, kb.priority DESC
-        LIMIT 1
-      `, [...userKeywords, ...userKeywords]);
-      
-      if (rows && rows.length > 0) {
-        console.log(`✅ Found match in searchByIndividualKeywords: ${rows[0].question} (score: ${rows[0].match_count})`);
-        return rows[0];
-      }
-      
-      console.log('❌ No match found in searchByIndividualKeywords');
-      return null;
-    } catch (error) {
-      console.error('❌ Error in searchByIndividualKeywords:', error);
+      console.error('Error searching knowledge base:', error);
       return null;
     }
   }
@@ -93,20 +35,16 @@ class KnowledgeDao {
   // 정확한 키워드 매칭으로 답변 검색
   async searchByExactKeywords(userMessage) {
     try {
-      console.log(`🔍 Exact keyword search for: "${userMessage}"`);
-      
       const searchQuery = userMessage.toLowerCase();
       
+      // 키워드를 개별적으로 확인
       const [rows] = await pool.query(`
         SELECT 
           kb.*,
           kc.name as category_name,
-          CASE 
-            WHEN LOWER(kb.keywords) = ? THEN 100
-            WHEN LOWER(kb.keywords) LIKE CONCAT(?, '%') THEN 90
-            WHEN LOWER(kb.keywords) LIKE CONCAT('%', ?, '%') THEN 80
-            ELSE 70
-          END as match_score
+          (
+            LENGTH(kb.keywords) - LENGTH(REPLACE(LOWER(kb.keywords), ?, ''))
+          ) as match_score
         FROM knowledge_base kb
         JOIN knowledge_categories kc ON kb.category_id = kc.id
         WHERE kb.is_active = TRUE 
@@ -114,137 +52,45 @@ class KnowledgeDao {
         AND LOWER(kb.keywords) LIKE CONCAT('%', ?, '%')
         ORDER BY match_score DESC, kb.priority DESC
         LIMIT 3
-      `, [searchQuery, searchQuery, searchQuery, searchQuery]);
+      `, [searchQuery, searchQuery]);
       
-      if (rows && rows.length > 0) {
-        console.log(`✅ Found ${rows.length} matches in searchByExactKeywords`);
-        return rows;
-      }
-      
-      console.log('❌ No match found in searchByExactKeywords');
-      return [];
+      return rows;
     } catch (error) {
-      console.error('❌ Error in searchByExactKeywords:', error);
+      console.error('Error in exact keyword search:', error);
       return [];
     }
   }
 
-  // 가장 강력한 검색 - 여러 전략을 순차적으로 시도
-  async searchBestMatch(userMessage) {
+  // 키워드별 개별 검색 (더 정확한 매칭)
+  async searchByIndividualKeywords(userMessage) {
     try {
-      console.log(`🎯 Starting comprehensive search for: "${userMessage}"`);
+      const keywords = userMessage.toLowerCase().split(/\s+/).filter(word => word.length > 1);
       
-      // 1단계: 완전 일치 또는 포함 검색
-      let result = await this.searchByIndividualKeywords(userMessage);
-      if (result) {
-        console.log('✅ Found in stage 1 (Individual keywords)');
-        return result;
-      }
+      if (keywords.length === 0) return null;
       
-      // 2단계: 기본 키워드 검색
-      result = await this.searchByKeywords(userMessage);
-      if (result) {
-        console.log('✅ Found in stage 2 (Basic keywords)');
-        return result;
-      }
-      
-      // 3단계: 단순 텍스트 매칭
-      result = await this.searchBySimpleText(userMessage);
-      if (result) {
-        console.log('✅ Found in stage 3 (Simple text)');
-        return result;
-      }
-      
-      console.log('❌ No match found in any search strategy');
-      return null;
-    } catch (error) {
-      console.error('❌ Error in searchBestMatch:', error);
-      return null;
-    }
-  }
-
-  // 단순 텍스트 매칭 (가장 관대한 검색)
-  async searchBySimpleText(userMessage) {
-    try {
-      console.log(`🔍 Simple text search for: "${userMessage}"`);
-      
-      const searchQuery = userMessage.toLowerCase().trim();
+      // 각 키워드에 대해 검색
+      const keywordConditions = keywords.map(() => 
+        'FIND_IN_SET(?, REPLACE(LOWER(kb.keywords), " ", "")) > 0'
+      ).join(' OR ');
       
       const [rows] = await pool.query(`
         SELECT 
           kb.*,
-          kc.name as category_name
+          kc.name as category_name,
+          (${keywords.map(() => 'FIND_IN_SET(?, REPLACE(LOWER(kb.keywords), " ", ""))').join(' + ')}) as match_count
         FROM knowledge_base kb
         JOIN knowledge_categories kc ON kb.category_id = kc.id
         WHERE kb.is_active = TRUE 
         AND kc.is_active = TRUE
-        AND (
-          LOWER(CONCAT(kb.keywords, ' ', kb.question, ' ', kb.answer)) LIKE CONCAT('%', ?, '%')
-        )
-        ORDER BY 
-          CASE 
-            WHEN LOWER(kb.question) LIKE CONCAT('%', ?, '%') THEN 1
-            WHEN LOWER(kb.keywords) LIKE CONCAT('%', ?, '%') THEN 2
-            ELSE 3
-          END,
-          kb.priority DESC
+        AND (${keywordConditions})
+        ORDER BY match_count DESC, kb.priority DESC
         LIMIT 1
-      `, [searchQuery, searchQuery, searchQuery]);
+      `, [...keywords, ...keywords]);
       
-      if (rows && rows.length > 0) {
-        console.log(`✅ Found match in searchBySimpleText: ${rows[0].question}`);
-        return rows[0];
-      }
-      
-      console.log('❌ No match found in searchBySimpleText');
-      return null;
+      return rows[0] || null;
     } catch (error) {
-      console.error('❌ Error in searchBySimpleText:', error);
+      console.error('Error in individual keyword search:', error);
       return null;
-    }
-  }
-
-  // 데이터베이스 연결 테스트
-  async testConnection() {
-    try {
-      console.log('🔌 Testing database connection...');
-      const [rows] = await pool.query('SELECT 1 as test');
-      console.log('✅ Database connection successful');
-      
-      // 테이블 존재 확인
-      const [tables] = await pool.query(`
-        SELECT TABLE_NAME 
-        FROM information_schema.TABLES 
-        WHERE TABLE_SCHEMA = ? 
-        AND TABLE_NAME IN ('knowledge_base', 'knowledge_categories')
-      `, [process.env.DB_NAME]);
-      
-      console.log(`📋 Found tables: ${tables.map(t => t.TABLE_NAME).join(', ')}`);
-      
-      if (tables.length < 2) {
-        console.log('❌ Knowledge base tables not found');
-        return false;
-      }
-      
-      // 데이터 존재 확인
-      const [dataRows] = await pool.query(`
-        SELECT COUNT(*) as count 
-        FROM knowledge_base kb
-        JOIN knowledge_categories kc ON kb.category_id = kc.id
-        WHERE kb.is_active = TRUE AND kc.is_active = TRUE
-      `);
-      
-      console.log(`📊 Active knowledge base entries: ${dataRows[0].count}`);
-      
-      if (dataRows[0].count === 0) {
-        console.log('⚠️ No active knowledge base entries found');
-        return false;
-      }
-      
-      return true;
-    } catch (error) {
-      console.error('❌ Database connection test failed:', error);
-      return false;
     }
   }
 
@@ -336,6 +182,17 @@ class KnowledgeDao {
       console.error('Error logging chat analytics:', error);
       // 분석 로그 실패는 전체 프로세스를 중단시키지 않음
     }
+  }
+
+  // 기본 응답 메시지들
+  getDefaultResponses() {
+    return [
+      `죄송합니다. 정확한 답변을 찾지 못했어요. 😅\n\n다음과 같은 주제로 질문해보시는 건 어떨까요?\n\n• 학교 소개 및 전공 정보\n• 입학 및 취업 정보\n• 캠퍼스 생활 및 시설\n• 학사 일정 및 장학금\n\n더 구체적으로 질문해주시면 정확한 답변을 드릴 수 있어요!`,
+      
+      `아직 해당 질문에 대한 정보가 준비되어 있지 않아요. 🤔\n\n**대신 이런 질문들을 시도해보세요:**\n• "서울과기대에 대해 알려주세요"\n• "컴퓨터공학과 정보가 궁금해요"\n• "입학 정보를 알려주세요"\n• "취업률이 어떻게 되나요?"\n\n더 많은 정보가 필요하시면 학교 홈페이지(www.seoultech.ac.kr)를 참고해주세요!`,
+      
+      `흥미로운 질문이네요! 하지만 정확한 정보를 찾지 못했습니다. 😊\n\n**서울과학기술대학교 관련 질문이라면:**\n• 학과/전공 관련 질문\n• 입학/진학 상담\n• 취업/진로 정보\n• 캠퍼스 생활 정보\n\n이런 주제들로 다시 질문해주시면 도움을 드릴 수 있어요!`
+    ];
   }
 }
 
