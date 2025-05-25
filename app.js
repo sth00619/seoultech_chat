@@ -1,3 +1,4 @@
+// app.js
 const express = require('express');
 const cors = require('cors');
 const swaggerUi = require('swagger-ui-express');
@@ -17,7 +18,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Swagger 설정
+// Swagger 설정 - JWT 인증 스키마 제거
 const swaggerOptions = {
   swaggerDefinition: {
     openapi: '3.0.0',
@@ -32,15 +33,6 @@ const swaggerOptions = {
         description: 'Development server',
       },
     ],
-    components: {
-      securitySchemes: {
-        bearerAuth: {
-          type: 'http',
-          scheme: 'bearer',
-          bearerFormat: 'JWT',
-        },
-      },
-    },
   },
   apis: ['./server/src/routes/*.js'],
 };
@@ -67,7 +59,7 @@ app.get('/', (req, res) => {
   });
 });
 
-// API 라우트 설정
+// API 라우트 설정 - 인증 미들웨어 없이 직접 연결
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/chat-rooms', chatRoutes);
