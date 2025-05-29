@@ -257,6 +257,36 @@ router.put('/:id', chatController.updateChatRoomTitle);
  */
 router.delete('/:id', chatController.deleteChatRoom);
 // ChatGPT post route
+/**
+ * @swagger
+ * /api/chat-rooms/gpt:
+ *   post:
+ *     summary: ChatGPT 응답 받기
+ *     description: 사용자의 메시지를 ChatGPT로 전송하고 응답을 받습니다.
+ *     tags: [Chat Rooms]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               message:
+ *                 type: string
+ *                 example: "서울과기대 컴공 어때?"
+ *     responses:
+ *       200:
+ *         description: GPT 응답 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 reply:
+ *                   type: string
+ *                   example: "서울과학기술대학교 컴퓨터공학과는..."
+ */
+
 router.post('/gpt', chatController.askChatGPT);
 
 module.exports = router;

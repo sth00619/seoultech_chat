@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const app = require('./src/app');
 
 const PORT = process.env.PORT || 3000;
@@ -19,4 +21,7 @@ process.on('SIGINT', () => {
   console.log('SIGINT received, shutting down gracefully');
   process.exit(0);
 });
+
+const chatRoutes = require("./src/routes/chatRoutes");
+app.use("/api/chat", chatRoutes);
 

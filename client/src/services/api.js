@@ -35,4 +35,15 @@ api.interceptors.response.use(
   }
 );
 
+// Create API client with base URL of your backend
+const API = axios.create({
+  baseURL: "http://localhost:3000/api",
+});
+
+// Ask GPT API
+export const askGPT = async (message) => {
+  const res = await API.post("/chat-rooms/gpt", { message });  // ✅ correct endpoint
+  return res.data.reply;
+};
+
 export default api;

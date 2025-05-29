@@ -1,6 +1,7 @@
 const messageDao = require('../dao/messageDao');
 const chatRoomDao = require('../dao/chatRoomDao');
 const knowledgeDao = require('../dao/knowledgeDao');
+const { askChatGPT } = require('../../services/aiService');
 
 class MessageController {
   // 채팅방의 메시지 목록 조회
@@ -133,12 +134,23 @@ class MessageController {
       }
 
       // 4. 매칭된 결과가 없는 경우 기본 응답
-      console.log('No match found, returning default response');
-      const controller = new MessageController();
-      return {
-        response: controller.getDefaultResponse(userMessage),
-        matchedId: null
-      };
+      console.log('No match found. Calling ChatGPT...');
+
+      try {
+        const gptResponse = await askChatGPT(userMessage);
+        return {
+          response: gptResponse,
+          matchedId: null
+        };
+      } catch (gptError) {
+        console.error("❌ GPT 호출 실패:", gptError.message);
+        const controller = new MessageController();
+        return {
+          response: controller.getDefaultResponse(userMessage),
+          matchedId: null
+        };
+      }
+      
 
     } catch (error) {
       console.error('Error generating bot response from DB:', error);
