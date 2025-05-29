@@ -48,7 +48,7 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, []);
 
-  // 로그인
+  // login 함수 수정
   const login = useCallback(async (email, password) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
@@ -56,9 +56,17 @@ export const AuthProvider = ({ children }) => {
       
       const response = await authService.login(email, password);
       
-      if (response.user) {
+      console.log('AuthContext - Login response:', response); // 디버깅
+      
+      if (response.user && response.token) {
+        // 토큰이 제대로 저장되었는지 확인
+        const savedToken = localStorage.getItem('token');
+        console.log('AuthContext - Token saved:', savedToken ? 'Yes' : 'No');
+        
         dispatch({ type: 'SET_USER', payload: response.user });
-        return { user: response.user };
+        return response;
+      } else {
+        throw new Error('Invalid response from server');
       }
     } catch (error) {
       const errorMessage = error.response?.data?.error || error.message || '로그인에 실패했습니다.';
