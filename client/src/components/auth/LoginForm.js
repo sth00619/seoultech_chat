@@ -63,10 +63,20 @@ const LoginForm = () => {
     if (!validateForm()) return;
     
     try {
-      await login(formData.email, formData.password);
-      navigate(ROUTES.CHAT);
+      const response = await login(formData.email, formData.password);
+      console.log('Login response:', response); // 디버깅용
+      
+      // 토큰이 저장되었는지 확인
+      setTimeout(() => {
+        console.log('Token after login:', localStorage.getItem('token'));
+        console.log('User after login:', localStorage.getItem('user'));
+        
+        // 채팅 페이지로 이동
+        navigate(ROUTES.CHAT);
+      }, 100); // 약간의 지연을 줘서 localStorage 저장 보장
+      
     } catch (err) {
-      // 에러는 AuthContext에서 처리됨
+      console.error('Login error:', err);
     }
   };
 
