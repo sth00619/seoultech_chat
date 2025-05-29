@@ -1,48 +1,79 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const userDao = require('../dao/userDao');
 
 class AuthController {
-  // 간단한 로그인 (평문 비밀번호)
+  // 로그인
   async login(req, res) {
     try {
       const { email, password } = req.body;
       
-      console.log('Login attempt:', { email, password });
+      console.log('Login attempt:', { email });
 
-      // 입력 검증
       if (!email || !password) {
         return res.status(400).json({ 
           error: 'Email and password are required' 
         });
       }
 
-      // 사용자 조회
       const user = await userDao.getUserByEmail(email);
-      console.log('User found:', user);
+      console.log('User found:', user ? 'Yes' : 'No');
       
       if (!user) {
         return res.status(401).json({ 
-          error: 'Invalid email or password' 
+          error: 'Invalid credentials' 
         });
       }
 
-      // 평문 비밀번호 비교 - password 컬럼 사용
-      if (password !== user.password) {
+      let isValidPassword = false;
+      
+      // password 컬럼에 저장된 값 확인
+      if (user.password) {
+        try {
+          // 먼저 bcrypt 해시로 비교 시도
+          isValidPassword = await bcrypt.compare(password, user.password);
+          console.log('Bcrypt comparison result:', isValidPassword);
+        } catch (err) {
+          // bcrypt 비교 실패시 평문 비교
+          console.log('Trying plain text comparison');
+          isValidPassword = (password === user.password);
+          
+          // 평문 비밀번호가 맞다면 해시로 업그레이드
+          if (isValidPassword) {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            await userDao.updatePassword(user.id, hashedPassword);
+            console.log('Password upgraded to hash for user:', email);
+          }
+        }
+      }
+      
+      if (!isValidPassword) {
         console.log('Password mismatch');
-        console.log('Expected:', user.password);
-        console.log('Received:', password);
         return res.status(401).json({ 
-          error: 'Invalid email or password' 
+          error: 'Invalid credentials' 
         });
       }
 
-      // 로그인 성공
+      // JWT 토큰 생성
+      const token = jwt.sign(
+        { 
+          userId: user.id, 
+          email: user.email 
+        },
+        process.env.JWT_SECRET || 'your-super-secret-jwt-key-for-seoultech-chat',
+        { 
+          expiresIn: '24h'
+        }
+      );
+
       const { password: userPassword, ...userWithoutPassword } = user;
       
       console.log('Login successful for:', userWithoutPassword.email);
       
       res.json({
         message: 'Login successful',
-        user: userWithoutPassword
+        user: userWithoutPassword,
+        token
       });
 
     } catch (error) {
@@ -51,19 +82,25 @@ class AuthController {
     }
   }
 
-  // 회원가입 (평문 비밀번호)
+  // 회원가입
   async register(req, res) {
     try {
       const { email, username, password } = req.body;
 
-      // 입력 검증
+      console.log('Register called:', { email, username });
+
       if (!email || !username || !password) {
         return res.status(400).json({ 
           error: 'Email, username, and password are required' 
         });
       }
 
-      // 이메일 중복 체크
+      if (password.length < 6) {
+        return res.status(400).json({ 
+          error: 'Password must be at least 6 characters long' 
+        });
+      }
+
       const existingUser = await userDao.getUserByEmail(email);
       if (existingUser) {
         return res.status(400).json({ 
@@ -71,16 +108,38 @@ class AuthController {
         });
       }
 
-      // 사용자 생성 (평문 비밀번호 그대로 저장)
+      const hashedPassword = await bcrypt.hash(password, 10);
+      console.log('Password hashed');
+
       const userId = await userDao.createUser({ 
         email, 
         username, 
-        password_hash: password // password_hash로 전달하지만 DAO에서 password 컬럼에 저장
+        password_hash: hashedPassword
       });
+
+      console.log('User created with ID:', userId);
+
+      // JWT 토큰 생성
+      const token = jwt.sign(
+        { 
+          userId: userId, 
+          email: email 
+        },
+        process.env.JWT_SECRET || 'your-super-secret-jwt-key-for-seoultech-chat',
+        { 
+          expiresIn: '24h'
+        }
+      );
 
       res.status(201).json({ 
         id: userId, 
-        message: 'User created successfully' 
+        message: 'User created successfully',
+        token,
+        user: {
+          id: userId,
+          email,
+          username
+        }
       });
 
     } catch (error) {
