@@ -1,5 +1,6 @@
 const chatRoomDao = require('../dao/chatRoomDao');
 const messageDao = require('../dao/messageDao');
+const { Configuration, OpenAIApi } = require("openai");
 
 class ChatController {
   async getChatRoomsByUser(req, res) {
@@ -96,6 +97,29 @@ class ChatController {
       res.status(500).json({ error: 'Internal server error' });
     }
   }
+  async askChatGPT(req, res) {
+    try {
+      const { message } = req.body;
+
+      const configuration = new Configuration({
+        apiKey: process.env.OPENAI_API_KEY,
+      });
+
+      const openai = new OpenAIApi(configuration);
+
+      const completion = await openai.createChatCompletion({
+        model: "gpt-3.5-turbo",
+        messages: [{ role: "user", content: message }],
+      });
+
+      const reply = completion.data.choices[0].message.content;
+      res.json({ reply });
+    } catch (error) {
+      console.error("ChatGPT error:", error.response?.data || error.message);
+      res.status(500).json({ error: "ChatGPT 호출 실패" });
+    }
+  }
+
 }
 
 module.exports = new ChatController();

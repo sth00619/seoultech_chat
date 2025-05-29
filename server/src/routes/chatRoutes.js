@@ -256,5 +256,7 @@ router.put('/:id', chatController.updateChatRoomTitle);
  *         description: 서버 내부 오류
  */
 router.delete('/:id', chatController.deleteChatRoom);
+// ChatGPT post route
+router.post('/gpt', chatController.askChatGPT);
 
 module.exports = router;
