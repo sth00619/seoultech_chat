@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const userDao = require('../dao/userDao');
+const jwtModule = require('../modules/JwtModule');
 
 class AuthController {
   // 로그인
@@ -27,18 +27,14 @@ class AuthController {
 
       let isValidPassword = false;
       
-      // password 컬럼에 저장된 값 확인
       if (user.password) {
         try {
-          // 먼저 bcrypt 해시로 비교 시도
           isValidPassword = await bcrypt.compare(password, user.password);
           console.log('Bcrypt comparison result:', isValidPassword);
         } catch (err) {
-          // bcrypt 비교 실패시 평문 비교
           console.log('Trying plain text comparison');
           isValidPassword = (password === user.password);
           
-          // 평문 비밀번호가 맞다면 해시로 업그레이드
           if (isValidPassword) {
             const hashedPassword = await bcrypt.hash(password, 10);
             await userDao.updatePassword(user.id, hashedPassword);
@@ -54,17 +50,14 @@ class AuthController {
         });
       }
 
-      // JWT 토큰 생성
-      const token = jwt.sign(
-        { 
-          userId: user.id, 
-          email: user.email 
-        },
-        process.env.JWT_SECRET || 'your-super-secret-jwt-key-for-seoultech-chat',
-        { 
-          expiresIn: '24h'
-        }
-      );
+      // JWT 토큰 생성 - JwtModule 사용
+      const tokenPayload = {
+        userId: user.id,
+        email: user.email
+      };
+      
+      const accessToken = jwtModule.createToken(tokenPayload);
+      const refreshToken = jwtModule.createRefreshToken({ userId: user.id });
 
       const { password: userPassword, ...userWithoutPassword } = user;
       
@@ -73,7 +66,8 @@ class AuthController {
       res.json({
         message: 'Login successful',
         user: userWithoutPassword,
-        token
+        token: accessToken,
+        refreshToken
       });
 
     } catch (error) {
@@ -120,21 +114,19 @@ class AuthController {
       console.log('User created with ID:', userId);
 
       // JWT 토큰 생성
-      const token = jwt.sign(
-        { 
-          userId: userId, 
-          email: email 
-        },
-        process.env.JWT_SECRET || 'your-super-secret-jwt-key-for-seoultech-chat',
-        { 
-          expiresIn: '24h'
-        }
-      );
+      const tokenPayload = {
+        userId: userId,
+        email: email
+      };
+      
+      const accessToken = jwtModule.createToken(tokenPayload);
+      const refreshToken = jwtModule.createRefreshToken({ userId });
 
       res.status(201).json({ 
         id: userId, 
         message: 'User created successfully',
-        token,
+        token: accessToken,
+        refreshToken,
         user: {
           id: userId,
           email,
@@ -144,6 +136,48 @@ class AuthController {
 
     } catch (error) {
       console.error('Registration error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  // 토큰 갱신
+  async refreshToken(req, res) {
+    try {
+      const { refreshToken } = req.body;
+      
+      if (!refreshToken) {
+        return res.status(400).json({ error: 'Refresh token is required' });
+      }
+
+      const tokens = await jwtModule.refreshToken(refreshToken);
+      
+      res.json({
+        message: 'Token refreshed successfully',
+        ...tokens
+      });
+      
+    } catch (error) {
+      console.error('Token refresh error:', error);
+      res.status(401).json({ error: 'Invalid refresh token' });
+    }
+  }
+
+  // 현재 사용자 정보 조회
+  async getCurrentUser(req, res) {
+    try {
+      const { userId } = req; // authMiddleware에서 설정됨
+      
+      const user = await userDao.getUserById(userId);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      const { password, password_hash, ...userWithoutPassword } = user;
+      
+      res.json({ user: userWithoutPassword });
+      
+    } catch (error) {
+      console.error('Get current user error:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   }

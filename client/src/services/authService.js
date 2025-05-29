@@ -7,7 +7,7 @@ const api = axios.create({
   },
 });
 
-// 요청 인터셉터 - JWT 토큰 자동 추가
+// 요청 인터셉터
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -21,17 +21,39 @@ api.interceptors.request.use(
   }
 );
 
-// 응답 인터셉터 - 401 에러 처리
+// 응답 인터셉터 - 토큰 만료 시 자동 갱신
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
+    
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (error.response.data.code === 'TOKEN_EXPIRED') {
+        originalRequest._retry = true;
+        
+        try {
+          const refreshToken = localStorage.getItem('refreshToken');
+          const response = await api.post('/auth/refresh', { refreshToken });
+          
+          localStorage.setItem('token', response.data.accessToken);
+          localStorage.setItem('refreshToken', response.data.refreshToken);
+          
+          originalRequest.headers.Authorization = `Bearer ${response.data.accessToken}`;
+          return api(originalRequest);
+          
+        } catch (refreshError) {
+          authService.logout();
+          window.location.href = '/login';
+          return Promise.reject(refreshError);
+        }
+      }
+    }
+    
     if (error.response?.status === 401) {
-      // 토큰 만료 또는 인증 실패
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      localStorage.removeItem('isAuthenticated');
+      authService.logout();
       window.location.href = '/login';
     }
+    
     return Promise.reject(error);
   }
 );
@@ -40,19 +62,20 @@ export const authService = {
   async login(email, password) {
     try {
       const response = await api.post('/auth/login', { email, password });
+      
       if (response.data.token) {
-        // JWT 토큰 저장
         localStorage.setItem('token', response.data.token);
+        localStorage.setItem('refreshToken', response.data.refreshToken);
         localStorage.setItem('user', JSON.stringify(response.data.user));
         localStorage.setItem('isAuthenticated', 'true');
       }
+      
       return response.data;
     } catch (error) {
       throw error.response?.data || { error: error.message };
     }
   },
 
-  // client/src/services/authService.js의 register 메서드
   async register(userData) {
     try {
       const response = await api.post('/auth/register', {
@@ -61,14 +84,40 @@ export const authService = {
         password: userData.password
       });
       
-      // 자동 로그인 (선택사항)
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
+        localStorage.setItem('refreshToken', response.data.refreshToken);
         localStorage.setItem('user', JSON.stringify(response.data.user));
         localStorage.setItem('isAuthenticated', 'true');
       }
       
       return response.data;
+    } catch (error) {
+      throw error.response?.data || { error: error.message };
+    }
+  },
+
+  async refreshToken() {
+    const refreshToken = localStorage.getItem('refreshToken');
+    if (!refreshToken) throw new Error('No refresh token');
+    
+    try {
+      const response = await api.post('/auth/refresh', { refreshToken });
+      
+      localStorage.setItem('token', response.data.accessToken);
+      localStorage.setItem('refreshToken', response.data.refreshToken);
+      
+      return response.data;
+    } catch (error) {
+      this.logout();
+      throw error;
+    }
+  },
+
+  async getCurrentUser() {
+    try {
+      const response = await api.get('/auth/me');
+      return response.data.user;
     } catch (error) {
       throw error.response?.data || { error: error.message };
     }
@@ -88,7 +137,6 @@ export const authService = {
     if (!token) return false;
     
     try {
-      // JWT 토큰의 페이로드 디코딩하여 만료 확인
       const payload = JSON.parse(atob(token.split('.')[1]));
       return payload.exp > Date.now() / 1000;
     } catch {
@@ -99,30 +147,7 @@ export const authService = {
   logout() {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
     localStorage.removeItem('isAuthenticated');
-  },
-
-  // 토큰 갱신 (선택사항)
-  async refreshToken() {
-    try {
-      const response = await api.post('/auth/refresh');
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
-      }
-      return response.data;
-    } catch (error) {
-      this.logout();
-      throw error;
-    }
-  },
-
-  // 현재 사용자 정보 가져오기 (서버에서)
-  async getCurrentUserFromServer() {
-    try {
-      const response = await api.get('/auth/me');
-      return response.data.user;
-    } catch (error) {
-      throw error.response?.data || { error: error.message };
-    }
   }
 };
