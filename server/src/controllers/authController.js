@@ -2,6 +2,18 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const userDao = require('../dao/userDao');
 
+// JWT 토큰 생성 함수
+const generateToken = (user) => {
+  return jwt.sign(
+    { 
+      userId: user.id, 
+      email: user.email 
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: '24h' }
+  );
+};
+
 class AuthController {
   // 로그인
   async login(req, res) {
