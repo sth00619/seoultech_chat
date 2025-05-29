@@ -1,3 +1,4 @@
+const bcrypt = require('bcryptjs');
 const userDao = require('../dao/userDao');
 
 class UserController {
@@ -28,23 +29,46 @@ class UserController {
     }
   }
 
-  // 새 사용자 생성
+  // 새 사용자 생성 - bcrypt 해싱 추가
   async createUser(req, res) {
     try {
       const { email, username, password } = req.body;
       
+      // 입력 검증
+      if (!email || !username || !password) {
+        return res.status(400).json({ 
+          error: 'Email, username, and password are required' 
+        });
+      }
+
+      // 비밀번호 강도 검증
+      if (password.length < 6) {
+        return res.status(400).json({ 
+          error: 'Password must be at least 6 characters long' 
+        });
+      }
+
       // 이메일 중복 체크
       const existingUser = await userDao.getUserByEmail(email);
       if (existingUser) {
         return res.status(400).json({ error: 'Email already exists' });
       }
 
+      // 비밀번호 해싱
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+      // 사용자 생성
       const userId = await userDao.createUser({ 
         email, 
         username, 
-        password_hash: password // password_hash 컬럼에 평문 비밀번호 저장
+        password_hash: hashedPassword // 해시된 비밀번호 전달
       });
-      res.status(201).json({ id: userId, message: 'User created successfully' });
+
+      res.status(201).json({ 
+        id: userId, 
+        message: 'User created successfully' 
+      });
     } catch (error) {
       console.error('Error creating user:', error);
       res.status(500).json({ error: 'Internal server error' });

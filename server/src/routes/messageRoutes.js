@@ -1,7 +1,14 @@
 const express = require('express');
 const messageController = require('../controllers/messageController');
+const authMiddleware = require('../middleware/authMiddleware');
 
 const router = express.Router();
+
+// 인증이 필요한 라우트에 미들웨어 적용
+router.get('/help', messageController.getHelp); // 도움말은 인증 불필요
+router.get('/chat-room/:chatRoomId', authMiddleware, messageController.getMessages);
+router.post('/', authMiddleware, messageController.sendMessage);
+router.delete('/:id', authMiddleware, messageController.deleteMessage);
 
 /**
  * @swagger

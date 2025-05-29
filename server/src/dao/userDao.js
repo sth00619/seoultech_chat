@@ -34,6 +34,15 @@ class UserDao {
     return result.affectedRows;
   }
 
+  // 새로 추가할 메서드
+  async updatePassword(id, hashedPassword) {
+    const [result] = await pool.query(
+      'UPDATE users SET password = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [hashedPassword, id]
+    );
+    return result.affectedRows;
+  }
+
   async deleteUser(id) {
     const [result] = await pool.query('DELETE FROM users WHERE id = ?', [id]);
     return result.affectedRows;

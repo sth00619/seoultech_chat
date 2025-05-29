@@ -2,6 +2,15 @@ const express = require('express');
 const chatController = require('../controllers/chatController');
 
 const router = express.Router();
+// server/src/routes/chatRoutes.js
+const authMiddleware = require('../middleware/authMiddleware');
+
+// 모든 라우트에 인증 미들웨어 적용
+router.get('/user/:userId', authMiddleware, chatController.getChatRoomsByUser);
+router.post('/', authMiddleware, chatController.createChatRoom);
+router.get('/:id', authMiddleware, chatController.getChatRoomById);
+router.put('/:id', authMiddleware, chatController.updateChatRoomTitle);
+router.delete('/:id', authMiddleware, chatController.deleteChatRoom);
 
 /**
  * @swagger
