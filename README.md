@@ -1,90 +1,58 @@
-# 📚 학칙피티 지침 GPT ![SeoulTech Logo](https://www.seoultech.ac.kr/resources/images/seoultech_logo.png)
+# 🚀 School-Regulations-GPT  
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)  
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/your-org/your-repo/ci.yml?branch=main)
 
-> **“학칙피티 지침”**  
-> 서울과학기술대학교 학사·행정 업무 지원용 규정 안내 GPT
+> **An 💡 Intelligent Assistant** for SeoulTech’s academic & administrative regulations
 
 ---
 
 ## 📋 Table of Contents
 1. [About](#about)  
 2. [Features](#features)  
-3. [Usage](#usage)  
-4. [Configuration](#configuration)  
-5. [Contributing](#contributing)  
-6. [License](#license)  
+3. [Folder Structure](#folder-structure)  
+4. [Usage](#usage)  
+5. [Configuration](#configuration)  
+6. [Contributing](#contributing)  
+7. [Developer License](#developer-license)  
+8. [License](#license)  
 
 ---
 
 ## 1. About
-서울과학기술대학교의 **학사·행정 업무**를 지원하는 규정 안내 GPT입니다.  
-사용자가 학교 제도, 회의, 위원회, 수업, 학사일정, 평의회, 휴학·복학, 수강신청 등과 관련된 질문을 하면,  
-업로드된 **규정·시행세칙·지침 문서**를 근거로 **공식적이고 정확한 답변**을 제공합니다.
-
-> 📝 **포커스:**  
-> - “업로드된 문서 내용에만” 의존  
-> - 답변마다 **문서명·조항번호** 출처 표기  
+**School-Regulations-GPT** is your go-to chatbot for Seoul National University of Science and Technology academic policies.  
+Ask anything about courses, committees, academic calendar, leave of absence, registration—and get **official**, **cited** answers based solely on the uploaded regulations documents.
 
 ---
 
 ## 2. Features
-- 🔹 **문서 기반 응답**  
-  - 답변은 반드시 **업로드된 문서** 내용으로만 구성됩니다.  
-- 🔹 **출처 필수 표기**  
-  - 모든 답변에 **문서명**과 **조항번호**를 함께 삽입합니다.  
-- 🔹 **조항 정보 구성**  
-  - 문서명 · 수정일 · 문서상태(시행중/폐지)  
-  - 문서분류(규정/시행세칙/지침)  
-  - 조항번호 · 조항제목 · 조항내용  
-- 🔹 **우선순위 로직**  
-  1. 동일 주제 조항이 여러 문서에 있을 때 → **시행 중** 조항 우선  
-  2. 시행 중 조항 미발견 시 → 폐지된 문서에서 답변, 출처에 `[폐지규정]` 명기  
+- 📑 **Document-Based Answers**  
+  - Relies **only** on uploaded regulation, bylaw, or guideline files  
+- 🔖 **Citation-First**  
+  - Every response includes **Document Name** & **Article Number**  
+- ⚖️ **Active vs. Repealed Rules**  
+  - Prefers **active** rules; if only repealed ones exist, marks with `[REPEALED]`  
+- 🔍 **Fallback Search**  
+  - If no rule found, says “Not found” and auto-searches dept. phone via browser.search  
 
-> 🔸 **예시**  
-> ```txt
-> 현재 시행 중인 규정에서는 해당 내용을 확인할 수 없습니다.
-> 다만, 폐지된 ‘교무회의 규정’ 제5조에 따르면 … 라고 되어 있습니다.
-> 📘 출처: [폐지규정] 교무회의 규정 제5조(회의)
-> ```
+> **Example**  
+> > “현재 시행 중인 규정에서는 해당 내용을 확인할 수 없습니다.  
+> > 다만, 폐지된 ‘교무회의 규정’ 제5조에 따르면 …  
+> > 📘 Source: [REPEALED] 교무회의 규정 제5조(회의)”
 
 ---
 
-## 3. Usage
-1. **질문하기**  
-   - 학교 제도·학사 일정·위원회·휴학·복학 등 관련 질문  
-2. **출처 확인**  
-   - 응답 상단에 **문서명·조항번호** 자동 삽입  
-3. **근거 조항 미발견 시**  
-   - 답변: “확인할 수 없습니다”  
-   - → 📞 관련 부서 전화번호 안내 전 [browser.search] 사용  
-     ```txt
-     <부서명> 서울과학기술대학교 전화번호
-     ```
-   - 예시:
-     - 교무처: 02-970-6310 ([학사행정](https://www.seoultech.ac.kr/academic))  
-     - 학생처: 02-970-6317 ([학생지원](https://www.seoultech.ac.kr/student))  
-     - 학사지원과: 02-970-6315 ([학사서비스](https://www.seoultech.ac.kr/academic-support))  
-4. **“전문 보여줘” 요청**  
-   - 특정 조항 관련 후속 요청 시 → 해당 조항 **전문**을 **정중하게** 출력  
-
----
-
-## 4. Configuration
-> ⚙️ **문서 업로드 포맷**  
-> 아래 항목을 모두 포함한 CSV/JSON/XLSX 파일 형태로 업로드하세요.  
-> ```yaml
-> - 문서명: "학사규정"
-> - 수정일: "2025-01-15"
-> - 문서상태: "시행중"
-> - 문서분류: "규정"
-> - 조항:
->   - 번호: "제3조"
->     제목: "수강신청"
->     내용: "수강신청은 ..."
-> ```
-  
-- 📂 **폴더 구조 예시**  
-  ```text
-  /docs
-    ├─ academic_regulations.json
-    ├─ enrollment_guidelines.json
-    └─ …  
+## 3. Folder Structure
+```text
+📦 project-root
+ ┣ 📂 .github
+ ┃ ┗ 📂 workflows           # CI/CD configs (GitHub Actions)
+ ┣ 📂 client                # Frontend React/Vue app
+ ┣ 📂 server                # Node.js/Express API
+ ┣ 📂 data                  # Regulation & guideline JSON/CSV
+ ┣ 📂 node_modules          # Dependencies
+ ┣ 📜 .env                  # Environment variables
+ ┣ 📜 app.js                # Entry point for server
+ ┣ 📜 README.md             # This file
+ ┣ 📜 package.json          # NPM scripts & deps
+ ┣ 📜 package-lock.json     # Locked dependency tree
+ ┗ 📜 LICENSE               # MIT License
