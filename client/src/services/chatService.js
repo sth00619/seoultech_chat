@@ -13,11 +13,11 @@ const api = axios.create({
 // 요청 인터셉터 (필요시 인증 토큰 추가)
 api.interceptors.request.use(
   (config) => {
-    // 필요시 여기에 인증 토큰 추가
-    // const token = localStorage.getItem('token');
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
+    // 인증 토큰 추가
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => {
