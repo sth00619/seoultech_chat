@@ -6,11 +6,11 @@ const router = express.Router();
 const authMiddleware = require('../middleware/authMiddleware');
 
 // 모든 라우트에 인증 미들웨어 적용
-router.get('/user/:userId', authMiddleware, chatController.getChatRoomsByUser);
-router.post('/', authMiddleware, chatController.createChatRoom);
-router.get('/:id', authMiddleware, chatController.getChatRoomById);
-router.put('/:id', authMiddleware, chatController.updateChatRoomTitle);
-router.delete('/:id', authMiddleware, chatController.deleteChatRoom);
+// router.get('/user/:userId', authMiddleware, chatController.getChatRoomsByUser);
+// router.post('/', authMiddleware, chatController.createChatRoom);
+// router.get('/:id', authMiddleware, chatController.getChatRoomById);
+// router.put('/:id', authMiddleware, chatController.updateChatRoomTitle);
+// router.delete('/:id', authMiddleware, chatController.deleteChatRoom);
 
 /**
  * @swagger
@@ -110,7 +110,7 @@ router.delete('/:id', authMiddleware, chatController.deleteChatRoom);
  *       500:
  *         description: 서버 내부 오류
  */
-router.get('/user/:userId', chatController.getChatRoomsByUser);
+router.get('/user/:userId', authMiddleware, chatController.getChatRoomsByUser);
 
 /**
  * @swagger
@@ -155,7 +155,7 @@ router.get('/user/:userId', chatController.getChatRoomsByUser);
  *       500:
  *         description: 서버 내부 오류
  */
-router.post('/', chatController.createChatRoom);
+router.post('/', authMiddleware, chatController.createChatRoom);
 
 /**
  * @swagger
@@ -185,7 +185,7 @@ router.post('/', chatController.createChatRoom);
  *       500:
  *         description: 서버 내부 오류
  */
-router.get('/:id', chatController.getChatRoomById);
+router.get('/:id', authMiddleware, chatController.getChatRoomById);
 
 /**
  * @swagger
@@ -230,7 +230,7 @@ router.get('/:id', chatController.getChatRoomById);
  *       500:
  *         description: 서버 내부 오류
  */
-router.put('/:id', chatController.updateChatRoomTitle);
+router.put('/:id', authMiddleware, chatController.updateChatRoomTitle);
 
 /**
  * @swagger
@@ -264,6 +264,6 @@ router.put('/:id', chatController.updateChatRoomTitle);
  *       500:
  *         description: 서버 내부 오류
  */
-router.delete('/:id', chatController.deleteChatRoom);
+router.delete('/:id', authMiddleware, chatController.deleteChatRoom);
 
 module.exports = router;
