@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useChat } from '../../hooks/useChat';
 import { useAuth } from '../../hooks/useAuth';
 import MessageList from './MessageList';
@@ -6,10 +7,11 @@ import MessageInput from './MessageInput';
 import ChatSidebar from './ChatSidebar';
 import Loading from '../../common/Loading';
 import ErrorMessage from '../../common/ErrorMessage';
-import { Menu, Settings, MoreVertical } from 'lucide-react';
+import { Menu, MoreVertical, LogOut, Download, Trash2 } from 'lucide-react';
 
 const ChatRoom = () => {
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const {
     currentChatRoom,
     messages,
@@ -19,12 +21,15 @@ const ChatRoom = () => {
     loadChatRooms,
     clearError,
     createChatRoom,
-    selectChatRoom
+    selectChatRoom,
+    deleteChatRoom
   } = useChat();
   
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [hasLoadedChatRooms, setHasLoadedChatRooms] = useState(false);
+  const dropdownRef = useRef(null);
+  const buttonRef = useRef(null);
 
   // useEffect를 안전하게 처리하기 위해 별도의 상태로 관리
   useEffect(() => {
@@ -33,6 +38,23 @@ const ChatRoom = () => {
       setHasLoadedChatRooms(true);
     }
   }, [user?.id, hasLoadedChatRooms, loadChatRooms]);
+
+  // 외부 클릭 감지
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target) &&
+          buttonRef.current && !buttonRef.current.contains(event.target)) {
+        setSettingsOpen(false);
+      }
+    };
+
+    if (settingsOpen) {
+      document.addEventListener('click', handleClickOutside);
+      return () => {
+        document.removeEventListener('click', handleClickOutside);
+      };
+    }
+  }, [settingsOpen]);
 
   const handleSendMessage = useCallback(async (content) => {
     try {
@@ -46,22 +68,101 @@ const ChatRoom = () => {
     setSidebarOpen(prev => !prev);
   }, []);
 
-  const handleToggleSettings = useCallback(() => {
+  const handleToggleSettings = useCallback((e) => {
+    e.stopPropagation();
     setSettingsOpen(prev => !prev);
   }, []);
 
   const handleCloseOverlay = useCallback(() => {
     setSidebarOpen(false);
-    setSettingsOpen(false);
   }, []);
+
+  // 대화 내보내기 함수
+  const handleExportChat = () => {
+    console.log('대화 내보내기 클릭됨');
+    
+    if (!messages || messages.length === 0) {
+      alert('내보낼 대화가 없습니다.');
+      return;
+    }
+
+    try {
+      const chatContent = messages.map(msg => 
+        `[${msg.role === 'user' ? '사용자' : 'AI'}] ${msg.content || msg.text || ''}`
+      ).join('\n\n');
+
+      const blob = new Blob([chatContent], { type: 'text/plain;charset=utf-8' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `${currentChatRoom?.title || '채팅'}_${new Date().toISOString().split('T')[0]}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      alert('대화 내보내기가 완료되었습니다.');
+      setSettingsOpen(false);
+    } catch (error) {
+      console.error('대화 내보내기 실패:', error);
+      alert('대화 내보내기에 실패했습니다.');
+    }
+  };
+
+  // 채팅방 삭제 함수
+  const handleDeleteChatRoom = async () => {
+    console.log('채팅방 삭제 클릭됨');
+    
+    if (!currentChatRoom) {
+      alert('삭제할 채팅방이 없습니다.');
+      return;
+    }
+    
+    if (window.confirm('정말로 이 채팅방을 삭제하시겠습니까?')) {
+      try {
+        await deleteChatRoom(currentChatRoom.id);
+        alert('채팅방이 삭제되었습니다.');
+        setSettingsOpen(false);
+      } catch (error) {
+        console.error('채팅방 삭제 실패:', error);
+        alert('채팅방 삭제에 실패했습니다.');
+      }
+    }
+  };
+
+  // 로그아웃 함수
+  const handleLogout = async () => {
+    console.log('로그아웃 클릭됨');
+    
+    try {
+      // logout 함수가 있으면 사용, 없으면 직접 처리
+      if (typeof logout === 'function') {
+        await logout();
+      } else {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        sessionStorage.clear();
+      }
+      
+      // 홈으로 이동
+      navigate('/');
+    } catch (error) {
+      console.error('로그아웃 실패:', error);
+      // 에러가 발생해도 강제로 로그아웃 처리
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      sessionStorage.clear();
+      navigate('/');
+    }
+  };
 
   const handleRetry = useCallback(() => {
     if (user?.id) {
-      setHasLoadedChatRooms(false); // 재로드를 위해 상태 리셋
+      setHasLoadedChatRooms(false);
     }
   }, [user?.id]);
 
-  // 빠른 시작 기능
   const handleQuickStart = useCallback(async () => {
     try {
       const newRoom = await createChatRoom(user.id, 'AI와의 첫 대화');
@@ -103,6 +204,7 @@ const ChatRoom = () => {
           
           <div className="chat-header-right">
             <button 
+              ref={buttonRef}
               className="chat-settings"
               onClick={handleToggleSettings}
               title="설정"
@@ -111,17 +213,29 @@ const ChatRoom = () => {
             </button>
             
             {settingsOpen && (
-              <div className="settings-dropdown">
-                <button className="dropdown-item">
-                  <Settings size={16} />
-                  채팅 설정
-                </button>
-                <button className="dropdown-item">
-                  대화 내보내기
-                </button>
-                <button className="dropdown-item danger">
-                  채팅방 삭제
-                </button>
+              <div ref={dropdownRef} className="settings-dropdown">
+                <div 
+                  className="dropdown-item"
+                  onClick={handleExportChat}
+                >
+                  <Download size={16} />
+                  <span>대화 내보내기</span>
+                </div>
+                <div 
+                  className={`dropdown-item danger ${!currentChatRoom ? 'disabled' : ''}`}
+                  onClick={currentChatRoom ? handleDeleteChatRoom : null}
+                >
+                  <Trash2 size={16} />
+                  <span>채팅방 삭제</span>
+                </div>
+                <hr className="dropdown-divider" />
+                <div 
+                  className="dropdown-item"
+                  onClick={handleLogout}
+                >
+                  <LogOut size={16} />
+                  <span>로그아웃</span>
+                </div>
               </div>
             )}
           </div>
@@ -192,8 +306,8 @@ const ChatRoom = () => {
         </div>
       </div>
 
-      {/* 오버레이 */}
-      {(sidebarOpen || settingsOpen) && (
+      {/* 사이드바 오버레이 */}
+      {sidebarOpen && (
         <div 
           className="overlay"
           onClick={handleCloseOverlay}

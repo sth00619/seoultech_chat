@@ -571,36 +571,76 @@
   padding: 0.5rem;
   border-radius: 4px;
   color: var(--text-secondary);
+  transition: all 0.2s ease;
 }
 
 .chat-settings:hover {
   background: var(--bg-secondary);
+  color: var(--primary-color);
 }
 
+/* 드롭다운 메뉴 */
 .settings-dropdown {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 0.5rem);
   right: 0;
-  margin-top: 0.5rem;
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
-  border-radius: 6px;
-  box-shadow: var(--shadow-lg);
-  min-width: 180px;
-  z-index: 1000;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  z-index: 9999;
+  animation: slideUp 0.2s ease;
+  overflow: hidden;
+  padding: 0.5rem 0;
 }
 
 .settings-dropdown .dropdown-item {
+  width: 100%;
   padding: 0.75rem 1rem;
   font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  user-select: none;
+}
+
+.settings-dropdown .dropdown-item:hover:not(.disabled) {
+  background: var(--bg-secondary);
+}
+
+.settings-dropdown .dropdown-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 .settings-dropdown .dropdown-item.danger {
   color: var(--danger-color);
 }
 
-.settings-dropdown .dropdown-item.danger:hover {
-  background: #fff5f5;
+.settings-dropdown .dropdown-item.danger:hover:not(.disabled) {
+  background: rgba(220, 53, 69, 0.1);
+}
+
+.dropdown-divider {
+  margin: 0.5rem 0;
+  border: none;
+  border-top: 1px solid var(--border-color);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .chat-content {
@@ -951,6 +991,7 @@
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 199; /* 사이드바보다 낮게 설정 */
+  pointer-events: auto;
 }
 
 /* 반응형 디자인 */
@@ -1011,6 +1052,12 @@
   
   .form-actions {
     flex-direction: column;
+  }
+  
+  /* 모바일에서 드롭다운 위치 조정 */
+  .settings-dropdown {
+    right: 0.5rem;
+    max-width: calc(100vw - 2rem);
   }
 }
 

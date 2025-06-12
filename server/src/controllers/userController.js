@@ -80,7 +80,8 @@ class UserController {
     try {
       const { id } = req.params;
       const { username, email } = req.body;
-
+      console.log(id);
+      console.log(req.params);
       const affectedRows = await userDao.updateUser(id, { username, email });
       
       if (affectedRows === 0) {
