@@ -1,6 +1,42 @@
 const messageDao = require('../dao/messageDao');
 const chatRoomDao = require('../dao/chatRoomDao');
 const knowledgeDao = require('../dao/knowledgeDao');
+const axios = require('axios');
+
+// ChatGPT API 호출 함수
+async function askChatGPT(userMessage) {
+  try {
+    const response = await axios.post(
+      'https://api.openai.com/v1/chat/completions',
+      {
+        model: 'gpt-3.5-turbo',
+        messages: [
+          {
+            role: 'system',
+            content: '당신은 서울과학기술대학교의 AI 도우미입니다. 학생들에게 학교 생활, 학업, 진로 등에 대해 친절하고 정확하게 답변해주세요.'
+          },
+          {
+            role: 'user',
+            content: userMessage
+          }
+        ],
+        max_tokens: 500,
+        temperature: 0.7
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    return response.data.choices[0].message.content;
+  } catch (error) {
+    console.error('ChatGPT API Error:', error.response?.data || error.message);
+    throw error;
+  }
+}
 
 class MessageController {
   // 채팅방의 메시지 목록 조회
@@ -132,13 +168,23 @@ class MessageController {
         };
       }
 
-      // 4. 매칭된 결과가 없는 경우 기본 응답
-      console.log('No match found, returning default response');
-      const controller = new MessageController();
-      return {
-        response: controller.getDefaultResponse(userMessage),
-        matchedId: null
-      };
+      // 4. 매칭된 결과가 없는 경우 ChatGPT 호출
+      console.log('No match found. Calling ChatGPT...');
+
+      try {
+        const gptResponse = await askChatGPT(userMessage);
+        return {
+          response: gptResponse,
+          matchedId: null
+        };
+      } catch (gptError) {
+        console.error("❌ GPT 호출 실패:", gptError.message);
+        const controller = new MessageController();
+        return {
+          response: controller.getDefaultResponse(userMessage),
+          matchedId: null
+        };
+      }
 
     } catch (error) {
       console.error('Error generating bot response from DB:', error);
