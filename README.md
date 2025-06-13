@@ -87,3 +87,6 @@ A GitHub Actions workflow runs `npm test` on every push and pull request to `mai
 
 This repository is a fork and currently has no upstream remote configured. Check
 for upstream updates manually before relying on CI results.
+
+![Node.js CI](https://github.com/OWNER/REPO/actions/workflows/nodejs-ci.yml/badge.svg)
+
