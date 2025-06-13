@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { showSwaggerToken } from '../../utils/swaggerHelper';
 import Layout from '../../common/Layout';
 import ChatRoom from '../chat/ChatRoom';
 import { ROUTES } from '../../utils/constants';
@@ -10,8 +11,15 @@ const ChatPage = () => {
 
   useEffect(() => {
     // 페이지 로드시 토큰 확인
-    console.log('ChatPage - Token:', localStorage.getItem('token'));
+    const token = localStorage.getItem('token');
+    console.log('ChatPage - Token:', token);
     console.log('ChatPage - isAuthenticated:', isAuthenticated);
+    
+    // Swagger용 토큰 출력 (개발 환경에서만)
+    if (token && process.env.NODE_ENV === 'development') {
+      console.log('%c🔐 Swagger 인증 토큰이 준비되었습니다!', 'color: #2ecc71; font-size: 14px; font-weight: bold;');
+      showSwaggerToken();
+    }
   }, [isAuthenticated]);
 
   if (loading) {

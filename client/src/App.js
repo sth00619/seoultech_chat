@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { showSwaggerToken } from './utils/swaggerHelper'; 
 import { AuthProvider } from './contexts/AuthContext';
 import { ChatProvider } from './contexts/ChatContext';
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -18,6 +19,22 @@ import './styles/components.css';
 import './styles/pages.css';
 
 function App() {
+  useEffect(() => {
+    // 개발 환경에서 전역 함수로 등록
+    if (process.env.NODE_ENV === 'development') {
+      window.swaggerToken = showSwaggerToken;
+      console.log('%c💡 Tip: 콘솔에서 swaggerToken() 을 입력하면 언제든 토큰을 확인할 수 있습니다.', 
+        'color: #3498db; background: #ecf0f1; padding: 5px; border-radius: 3px;');
+      
+      // 로그인된 상태면 바로 토큰 표시
+      const token = localStorage.getItem('token');
+      if (token) {
+        console.log('%c✅ 로그인된 상태입니다. Swagger 토큰:', 'color: #27ae60; font-weight: bold;');
+        console.log('%cBearer ' + token, 'color: #2c3e50; background: #ecf0f1; padding: 5px;');
+      }
+    }
+  }, []);
+
   return (
     <ThemeProvider>
       <AuthProvider>
