@@ -8,7 +8,6 @@ import { MessageCircle, Users, Zap, Shield, ArrowRight } from 'lucide-react';
 
 const HomePage = () => {
   const { isAuthenticated, user } = useAuth();
-
   const features = [
     {
       icon: <MessageCircle size={32} />,
