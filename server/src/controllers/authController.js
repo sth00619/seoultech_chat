@@ -1,4 +1,5 @@
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const userDao = require('../dao/userDao');
 const jwtModule = require('../modules/JwtModule');
 
