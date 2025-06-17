@@ -11,7 +11,7 @@ const ProfilePage = () => {
   if (loading) {
     return (
       <Layout>
-        <div className="page-loading">로딩 중...</div>
+        <div className="page-loading">Loading...</div>
       </Layout>
     );
   }
@@ -25,8 +25,8 @@ const ProfilePage = () => {
       <div className="profile-page">
         <div className="container">
           <div className="page-header">
-            <h1>프로필</h1>
-            <p>개인 정보를 관리하고 설정을 변경하세요.</p>
+            <h1>Profile</h1>
+            <p>Manage your personal information and update your settings.</p>
           </div>
           <UserProfile />
         </div>

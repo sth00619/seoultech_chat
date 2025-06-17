@@ -19,21 +19,21 @@ const Header = () => {
   };
 
   const navigationItems = [
-    { to: ROUTES.HOME, icon: Home, label: '홈' },
-    { to: ROUTES.CHAT, icon: MessageCircle, label: '채팅', requireAuth: true },
-    { to: ROUTES.USERS, icon: Users, label: '사용자', requireAuth: true },
+    { to: ROUTES.HOME, icon: Home, label: 'Home' },
+    { to: ROUTES.CHAT, icon: MessageCircle, label: 'Chat', requireAuth: true },
+    { to: ROUTES.USERS, icon: Users, label: 'Users', requireAuth: true },
   ];
 
   return (
     <header className="header">
       <div className="header-container">
-        {/* 로고 */}
+        {/* Logo */}
         <Link to={ROUTES.HOME} className="logo">
           <MessageCircle size={24} />
           <span>SeoulTech Chat</span>
         </Link>
 
-        {/* 데스크톱 네비게이션 */}
+        {/* Desktop Navigation */}
         <nav className="desktop-nav">
           {navigationItems.map(({ to, icon: Icon, label, requireAuth }) => {
             if (requireAuth && !isAuthenticated) return null;
@@ -46,14 +46,14 @@ const Header = () => {
           })}
         </nav>
 
-        {/* 헤더 액션들 */}
+        {/* Header Actions */}
         <div className="header-actions">
-          {/* 테마 토글 */}
-          <button onClick={toggleTheme} className="theme-toggle" title="테마 변경">
+          {/* Theme Toggle */}
+          <button onClick={toggleTheme} className="theme-toggle" title="Toggle Theme">
             {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
           </button>
 
-          {/* 사용자 메뉴 */}
+          {/* User Menu */}
           {isAuthenticated ? (
             <div className="user-menu-container">
               <button 
@@ -75,22 +75,22 @@ const Header = () => {
                   <hr />
                   <Link to={ROUTES.PROFILE} className="dropdown-item" onClick={() => setIsUserMenuOpen(false)}>
                     <User size={16} />
-                    프로필
+                    Profile
                   </Link>
                   <button onClick={handleLogout} className="dropdown-item">
-                    로그아웃
+                    Log Out
                   </button>
                 </div>
               )}
             </div>
           ) : (
             <div className="auth-buttons">
-              <Link to={ROUTES.LOGIN} className="btn btn-outline">로그인</Link>
-              <Link to={ROUTES.REGISTER} className="btn btn-primary">회원가입</Link>
+              <Link to={ROUTES.LOGIN} className="btn btn-outline">Log In</Link>
+              <Link to={ROUTES.REGISTER} className="btn btn-primary">Sign Up</Link>
             </div>
           )}
 
-          {/* 모바일 메뉴 토글 */}
+          {/* Mobile Menu Toggle */}
           <button 
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="mobile-menu-toggle"
@@ -100,7 +100,7 @@ const Header = () => {
         </div>
       </div>
 
-      {/* 모바일 메뉴 */}
+      {/* Mobile Menu */}
       {isMenuOpen && (
         <div className="mobile-menu">
           {navigationItems.map(({ to, icon: Icon, label, requireAuth }) => {
@@ -121,17 +121,17 @@ const Header = () => {
           {!isAuthenticated && (
             <div className="mobile-auth-buttons">
               <Link to={ROUTES.LOGIN} className="btn btn-outline" onClick={() => setIsMenuOpen(false)}>
-                로그인
+                Log In
               </Link>
               <Link to={ROUTES.REGISTER} className="btn btn-primary" onClick={() => setIsMenuOpen(false)}>
-                회원가입
+                Sign Up
               </Link>
             </div>
           )}
         </div>
       )}
 
-      {/* 오버레이 */}
+      {/* Overlay */}
       {(isMenuOpen || isUserMenuOpen) && (
         <div 
           className="overlay" 
