@@ -1,0 +1,61 @@
+import React from 'react';
+import { renderHook, act } from '@testing-library/react';
+import { AuthProvider, useAuth } from '../AuthContext';
+import { authService } from '../../services/authService';
+
+jest.mock('../../services/authService');
+
+const wrapper = ({ children }) => <AuthProvider>{children}</AuthProvider>;
+
+describe('AuthContext', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    jest.clearAllMocks();
+  });
+
+  it('초기 상태가 올바르게 설정되어야 함', () => {
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    expect(result.current.user).toBeNull();
+    expect(result.current.isAuthenticated).toBe(false);
+    expect(result.current.loading).toBe(false);
+  });
+
+  it('로그인이 성공적으로 동작해야 함', async () => {
+    const mockUser = { id: 1, email: 'test@test.com', username: 'testuser' };
+    const mockToken = 'fake-token';
+
+    authService.login.mockResolvedValue({
+      user: mockUser,
+      token: mockToken
+    });
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    await act(async () => {
+      await result.current.login('test@test.com', 'password123');
+    });
+
+    expect(result.current.user).toEqual(mockUser);
+    expect(result.current.isAuthenticated).toBe(true);
+    expect(localStorage.getItem('token')).toBe(mockToken);
+  });
+
+  it('로그아웃이 성공적으로 동작해야 함', async () => {
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    // 먼저 로그인
+    await act(async () => {
+      await result.current.login('test@test.com', 'password123');
+    });
+
+    // 로그아웃
+    act(() => {
+      result.current.logout();
+    });
+
+    expect(result.current.user).toBeNull();
+    expect(result.current.isAuthenticated).toBe(false);
+    expect(localStorage.getItem('token')).toBeNull();
+  });
+});
