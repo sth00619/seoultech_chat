@@ -1,11 +1,12 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:3000/api',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
   headers: {
     'Content-Type': 'application/json',
   },
 });
+//const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 // 요청 인터셉터
 api.interceptors.request.use(
