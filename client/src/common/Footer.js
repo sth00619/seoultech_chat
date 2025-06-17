@@ -1,5 +1,6 @@
 import React from 'react';
 import { Heart } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
@@ -16,6 +17,7 @@ const Footer = () => {
             <ul>
               <li><a href="https://seoultech.ac.kr" target="_blank" rel="noopener noreferrer">서울과학기술대학교</a></li>
               <li><a href="/api-docs" target="_blank" rel="noopener noreferrer">API 문서</a></li>
+              <li><Link to="/about">About Us</Link></li>
             </ul>
           </div>
           

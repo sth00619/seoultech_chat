@@ -7,7 +7,8 @@ export const ROUTES = {
   CHAT: '/chat',
   PROFILE: '/profile',
   USERS: '/users',
-  USER_MANAGEMENT: '/admin/users'
+  USER_MANAGEMENT: '/admin/users',
+  ABOUT: '/about'
 };
 
 export const CHAT_ROLES = {
