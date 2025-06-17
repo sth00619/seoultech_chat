@@ -141,7 +141,7 @@ router.get('/help', messageController.getHelp);
  *       - in: query
  *         name: limit
  *         required: false
- *         description: 한 번에 가져올 메시지 수 (기본값: 100)
+ *         description: "한 번에 가져올 메시지 수 (기본값: 100)"
  *         schema:
  *           type: integer
  *           minimum: 1
@@ -151,7 +151,7 @@ router.get('/help', messageController.getHelp);
  *       - in: query
  *         name: offset
  *         required: false
- *         description: 건너뛸 메시지 수 (기본값: 0)
+ *         description: "건너뛸 메시지 수 (기본값: 0)"
  *         schema:
  *           type: integer
  *           minimum: 0

@@ -1,6 +1,3 @@
-
-<client/src/services/__tests__/chatService.test.js>
-
 import axios from 'axios';
 import { chatService } from '../chatService';
 
