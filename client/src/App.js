@@ -12,6 +12,7 @@ import LoginPage from './components/pages/LoginPage';
 import RegisterPage from './components/pages/RegisterPage';
 import ChatPage from './components/pages/ChatPage';
 import ProfilePage from './components/pages/ProfilePage';
+import AboutPage from './components/pages/AboutPage';
 
 // Styles
 import './styles/globals.css';
@@ -47,6 +48,7 @@ function App() {
                 <Route path={ROUTES.REGISTER} element={<RegisterPage />} />
                 <Route path={ROUTES.CHAT} element={<ChatPage />} />
                 <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
+                <Route path={ROUTES.ABOUT} element={<AboutPage />} />
                 <Route path="*" element={<HomePage />} />
               </Routes>
             </div>

@@ -27,7 +27,7 @@ const ChatPage = () => {
       <Layout>
         <div className="page-loading">
           <div className="loading-spinner" />
-          <p>로딩 중...</p>
+          <p>Loading...</p>
         </div>
       </Layout>
     );

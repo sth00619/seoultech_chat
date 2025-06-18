@@ -13,25 +13,25 @@ const LoginForm = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
-  
+
   const { login, loading, error, clearError } = useAuth();
   const navigate = useNavigate();
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.email) {
       newErrors.email = '이메일을 입력해주세요.';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = '올바른 이메일 형식이 아닙니다.';
     }
-    
+
     if (!formData.password) {
       newErrors.password = '비밀번호를 입력해주세요.';
     } else if (formData.password.length < 6) {
       newErrors.password = '비밀번호는 최소 6자 이상이어야 합니다.';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -42,7 +42,7 @@ const LoginForm = () => {
       ...prev,
       [name]: value
     }));
-    
+
     // 입력 시 해당 필드 에러 제거
     if (errors[name]) {
       setErrors(prev => ({
@@ -50,7 +50,7 @@ const LoginForm = () => {
         [name]: ''
       }));
     }
-    
+
     // 전역 에러 제거
     if (error) {
       clearError();
@@ -59,22 +59,22 @@ const LoginForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
-    
+
     try {
       const response = await login(formData.email, formData.password);
       console.log('Login response:', response); // 디버깅용
-      
+
       // 토큰이 저장되었는지 확인
       setTimeout(() => {
         console.log('Token after login:', localStorage.getItem('token'));
         console.log('User after login:', localStorage.getItem('user'));
-        
+
         // 채팅 페이지로 이동
         navigate(ROUTES.CHAT);
       }, 100); // 약간의 지연을 줘서 localStorage 저장 보장
-      
+
     } catch (err) {
       console.error('Login error:', err);
     }
@@ -84,13 +84,13 @@ const LoginForm = () => {
     <div className="auth-form-container">
       <div className="auth-form">
         <div className="auth-header">
-          <h2>로그인</h2>
-          <p>SeoulTech Chat에 오신 것을 환영합니다!</p>
+          <h2>Log In</h2>
+          <p>Welcome to SeoulTech Chat!</p>
         </div>
 
         {error && (
-          <ErrorMessage 
-            error={error} 
+          <ErrorMessage
+            error={error}
             onClose={clearError}
             type="error"
           />
@@ -99,7 +99,7 @@ const LoginForm = () => {
         <form onSubmit={handleSubmit} className="form">
           <div className="form-group">
             <label htmlFor="email" className="form-label">
-              이메일
+              email
             </label>
             <div className="input-group">
               <Mail size={20} className="input-icon" />
@@ -109,7 +109,7 @@ const LoginForm = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="이메일을 입력하세요"
+                placeholder="Enter your email"
                 className={`form-input ${errors.email ? 'error' : ''}`}
                 autoComplete="email"
               />
@@ -119,7 +119,7 @@ const LoginForm = () => {
 
           <div className="form-group">
             <label htmlFor="password" className="form-label">
-              비밀번호
+              password
             </label>
             <div className="input-group">
               <Lock size={20} className="input-icon" />
@@ -129,7 +129,7 @@ const LoginForm = () => {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="비밀번호를 입력하세요"
+                placeholder="Enter your password"
                 className={`form-input ${errors.password ? 'error' : ''}`}
                 autoComplete="current-password"
               />
@@ -150,15 +150,15 @@ const LoginForm = () => {
             fullWidth
             size="large"
           >
-            로그인
+            Log In
           </Button>
         </form>
 
         <div className="auth-footer">
           <p>
-            계정이 없으신가요?{' '}
+            Don't have an account?{' '}
             <Link to={ROUTES.REGISTER} className="auth-link">
-              회원가입
+              Sign Up
             </Link>
           </p>
         </div>

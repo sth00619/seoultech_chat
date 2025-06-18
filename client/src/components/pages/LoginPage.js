@@ -11,7 +11,7 @@ const LoginPage = () => {
   if (loading) {
     return (
       <Layout>
-        <div className="page-loading">로딩 중...</div>
+        <div className="page-loading">Loading...</div>
       </Layout>
     );
   }
