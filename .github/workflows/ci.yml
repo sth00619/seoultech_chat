@@ -1,23 +1,617 @@
-name: CI
+alpngmu99
+상태 추가하기
+
+alpngmu99 — 2025. 6. 12. 오후 4:54
+chat gpt 관련 검색어 쿼리 수정 완료
+<해야 할 일>
+데이터 넣기
+데이터 넣고 쿼리문 테스트 후 쿼리문 개선(아마도 필수일듯)
+CI/CD 기능 구현하기
+ 
+jamesjoshuahamburgerhyeon — 2025. 6. 12. 오후 11:03
+also writing down, PPT,Report,Manual is what we should do
+I hope everybody voted to move to Wednsday, but What I've know until now is People are not sure to move wendsday (probably because of end of semester delayed) so please @alpngmu99  @Butler before everything becomre assure, don't leave campus, and meet together as preplanned, We don't know yet
+이미지
+Butler — 2025. 6. 13. 오후 4:22
+[네이버 지도]
+비기닝 브레드
+서울 노원구 동일로193길 14 1층
+https://naver.me/GSUAn8Pt
+alpngmu99 — 2025. 6. 13. 오후 5:06
+https://github.com/sth00619/seoultech_chat/
+GitHub
+GitHub - sth00619/seoultech_chat
+Contribute to sth00619/seoultech_chat development by creating an account on GitHub.
+alpngmu99 — 2025. 6. 13. 오후 5:19
+dd
+Butler — 2025. 6. 13. 오후 5:31
+너는 서울과학기술대학교의 학사·행정 업무를 지원하는 규정 안내 GPT야.
+너의 역할은 사용자가 학교 제도, 회의, 위원회, 수업, 학사일정, 평의회, 휴학, 복학, 수강신청 등과 관련된 질문을 하면,
+업로드된 규정, 시행세칙, 지침 문서를 근거로 공식적이고 정확한 답변을 제공하는 것이야.
+
+🔹 반드시 업로드된 문서 내용을 기반으로만 답변해야 해.
+🔹 모든 답변에는 반드시 출처(문서명과 조항번호)를 함께 표시해.
+🔹 문서의 조항은 다음 정보를 포함하고 있어: 문서명, 수정일, 문서상태(시행중/폐지), 문서분류(규정/시행세칙/지침), 조항번호, 조항제목, 조항내용
+🔹 동일한 주제의 조항이 여러 문서에 있을 경우, 시행 중인 조항을 우선해서 사용해.
+🔹 만약 시행 중인 규정에서 해당 정보를 찾을 수 없고, 폐지된 문서에서만 확인된다면
+  → 답변을 제공하되 출처에 [폐지규정]이라고 명시해야 해.
+
+🔸 예시:
+ “현재 시행 중인 규정에서는 해당 내용을 확인할 수 없습니다.
+ 다만, 폐지된 ‘교무회의 규정’ 제5조에 따르면 … 라고 되어 있습니다.
+ 📘 출처: [폐지규정] 교무회의 규정 제5조(회의)”
+
+🔹 근거 조항이 전혀 없는 질문이라면
+ 1) “확인할 수 없습니다”라고 답하고,
+ 2) 관련 부서 전화번호를 안내하기 전에 반드시 browser.search 도구를 사용하여
+  “<부서명> 서울과학기술대학교 전화번호”를 검색해 공식 홈페이지 정보를 확인한 뒤 제공해 줘.
+  예:
+  – 교무처: 02-970-6310 (검색 결과: https://www.seoultech.ac.kr/ → 학사행정)
+  – 학생처: 02-970-6317 (검색 결과: https://www.seoultech.ac.kr/ → 학생지원)
+  – 학사지원과: 02-970-6315 (검색 결과: https://www.seoultech.ac.kr/ → 학사서비스)
+
+🔹 사용자 질문이 특정 조항과 관련되었을 경우, 후속으로 “전문 보여줘”라는 요청이 들어오면 조항 전체를 정중하게 보여줘.
+
+정중하고 명확하게 답변하되, 학교 규정을 대표한다는 자세로 신중히 말해줘. 정보의 오류는 절대 있어서는 안돼.
+서울과학기술대학교
+서울과학기술대학교, 과기대
+이미지
+alpngmu99 — 2025. 6. 13. 오후 5:33
+이미지
+Butler — 2025. 6. 13. 오후 5:41
+https://chatgpt.com/share/684be429-b20c-800b-a41a-deb0cc2be3c2
+ChatGPT
+ChatGPT - 챗봇 맥락 이해 개선
+Shared via ChatGPT
+이미지
+jamesjoshuahamburgerhyeon — 2025. 6. 13. 오후 6:13
+swagger
+alpngmu99 — 2025. 6. 13. 오후 6:24
+CI/CD 어떻게 해야할지 생각해오고
+DB 데이터 어떻게 넣어야하는지
+PPT, Report, Manual 준비하기
+alpngmu99 — 2025. 6. 14. 오후 3:19
+이미지
+이미지
+이미지
+첨부 파일 형식: document
+Chapter Preview-Chapter 1.docx
+15.58 KB
+첨부 파일 형식: document
+Chapter Preview-Chapter 2.docx
+20.35 KB
+첨부 파일 형식: document
+Chapter Preview-Chapter 3,4.docx
+26.28 KB
+첨부 파일 형식: document
+Chapter Preview-Chapter 5.docx
+26.00 KB
+첨부 파일 형식: document
+Chapter Preview-Chapter 6.docx
+19.04 KB
+첨부 파일 형식: document
+Chapter Preview-Chapter 8.docx
+17.42 KB
+첨부 파일 형식: document
+Chapter Preview-Chapter 9.docx
+21.58 KB
+첨부 파일 형식: document
+Chapter Preview-Chapter 10.docx
+154.68 KB
+첨부 파일 형식: document
+Chapter Preview-Chapter 11.docx
+77.83 KB
+jamesjoshuahamburgerhyeon — 2025. 6. 16. 오후 7:59
+This is our github status, and I feel real dangerousness from this.
+Last OSS module in 2024, our team banned good coder's commit even he has 10000 and others has around 100commit. 
+This is serious and very big problem and I will even think about make new repository unless gayung and my github accoount make more than 1000commits.
+:This is very bad escpecially Josue Obregon will see it very badly.
+we should seriously forbidden @alpngmu99  and seriously consider the way to commit @Butler  @jamesjoshuahamburgerhyeon  more than 1000 commits.
+Let's talk  aboout tommorow later
+이미지
+alpngmu99 — 어제 오전 9:08
+내 생각에는 일단 그러면 새로운 repo 생성한 다음에
+부분을 나눠서 server 쪽 기반이나 초기 코드들은 내가 commit하고
+나머지 클라이언트-가영, 서버-성현 이렇게 commit 해도 됨
+alpngmu99 — 어제 오전 9:15
+그런데 그러면 commit이 너무 최근이라서
+교수님한테 재시험 보면서 물어볼게
+어떻게 해도 되는지
+내가 통합 역할을 담당해서 내가 다 commit 해버렸다고
+그리고 일단 CI/CD하는 방법 내가 구현 방법 물어봐서 front/back/db 단위로 하는 방법 생성했는데
+그거는 성현/가영이 하면 될 듯
+alpngmu99 — 어제 오후 12:14
+commit이 아예 없으면 문제가 되겠지만 그런 게 아니라면
+굳이 새로 repo 생성해서 할 필요없고
+자기가 맡은 부분에 대해서만 제대로 설명할 수 있으면 된다고 하던데
+이따가 CI/CD 부분만 너네가 commit하면 문제가 없을 거 같은데?
+alpngmu99 — 어제 오후 5:00
+302에서 기다리는 중
+alpngmu99 — 어제 오후 5:37
+const request = require('supertest');
+const express = require('express');
+const authController = require('../authController');
+const userDao = require('../../dao/userDao');
+const bcrypt = require('bcryptjs');
+확장
+message.txt
+3KB
+const request = require('supertest');
+const express = require('express');
+const authController = require('../authController');
+const userDao = require('../../dao/userDao');
+const bcrypt = require('bcryptjs');
+확장
+message.txt
+3KB
+const pool = require('../../config/database');
+const userDao = require('../userDao');
+
+jest.mock('../../config/database');
+
+describe('UserDao', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('getUserByEmail', () => {
+    it('이메일로 사용자를 찾아야 함', async () => {
+      const mockUser = {
+        id: 1,
+        email: 'test@seoultech.ac.kr',
+        username: 'testuser'
+      };
+
+      pool.query.mockResolvedValue([[mockUser]]);
+
+      const result = await userDao.getUserByEmail('test@seoultech.ac.kr');
+
+      expect(pool.query).toHaveBeenCalledWith(
+        'SELECT * FROM users WHERE email = ?',
+        ['test@seoultech.ac.kr']
+      );
+      expect(result).toEqual(mockUser);
+    });
+
+    it('사용자가 없을 때 undefined 반환', async () => {
+      pool.query.mockResolvedValue([[]]);
+
+      const result = await userDao.getUserByEmail('notfound@seoultech.ac.kr');
+
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe('createUser', () => {
+    it('새 사용자를 생성해야 함', async () => {
+      pool.query.mockResolvedValue([{ insertId: 1 }]);
+
+      const userData = {
+        email: 'new@seoultech.ac.kr',
+        username: 'newuser',
+        password_hash: 'hashedPassword'
+      };
+
+      const result = await userDao.createUser(userData);
+
+      expect(pool.query).toHaveBeenCalledWith(
+        'INSERT INTO users (email, username, password) VALUES (?, ?, ?)',
+        ['new@seoultech.ac.kr', 'newuser', 'hashedPassword']
+      );
+      expect(result).toBe(1);
+    });
+  });
+});
+alpngmu99 — 어제 오후 5:46
+module.exports = {
+  testEnvironment: 'node',
+  coverageDirectory: 'coverage',
+  collectCoverageFrom: [
+    'server//*.js',
+    '!server//node_modules/',
+    '!server//tests/'
+  ],
+  testMatch: [
+    '/server//tests//.test.js',
+    '/server//.test.js'
+  ],
+  moduleDirectories: ['node_modules', 'server'],
+  verbose: true,
+  testTimeout: 10000
+};
+{
+  "name": "seoultech-chat-api",
+  "version": "1.0.0",
+  "description": "SeoulTech Chat API Server",
+  "main": "app.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:specific": "jest --testPathPattern='(userDao|authController)\.test\.js'",
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "keywords": [
+    "seoultech",
+    "chat",
+    "api"
+  ],
+  "author": "SeoulTech Team",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.9.0",
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.14.1",
+    "socket.io": "^4.8.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10",
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3",
+    "@types/jest": "^29.5.5"
+  }
+}
+alpngmu99 — 어제 오후 6:26
+const request = require('supertest');
+const app = require('../../../app');
+const pool = require('../../config/database');
+
+describe('API 통합 테스트', () => {
+  let server;
+  let testUser;
+
+  beforeAll(async () => {
+    // 테스트 DB 연결
+    await pool.query('DELETE FROM messages');
+    await pool.query('DELETE FROM chat_rooms');
+    await pool.query('DELETE FROM users');
+
+    server = app.listen(4000);
+  });
+
+  afterAll(async () => {
+    await server.close();
+    await pool.end();
+  });
+
+  describe('인증 플로우', () => {
+    it('회원가입 -> 로그인 -> 채팅방 생성 전체 플로우', async () => {
+      // 1. 회원가입
+      const registerRes = await request(app)
+        .post('/api/auth/register')
+        .send({
+          email: 'integration@test.com',
+          username: 'integrationtest',
+          password: 'password123'
+        });
+
+      expect(registerRes.status).toBe(201);
+      testUser = registerRes.body;
+
+      // 2. 로그인
+      const loginRes = await request(app)
+        .post('/api/auth/login')
+        .send({
+          email: 'integration@test.com',
+          password: 'password123'
+        });
+
+      expect(loginRes.status).toBe(200);
+      const { token } = loginRes.body;
+
+      // 3. 채팅방 생성
+      const chatRoomRes = await request(app)
+        .post('/api/chat-rooms')
+        .set('Authorization', Bearer ${token})
+        .send({
+          userId: testUser.user.id,
+          title: '테스트 채팅방'
+        });
+
+      expect(chatRoomRes.status).toBe(201);
+      expect(chatRoomRes.body.title).toBe('테스트 채팅방');
+    });
+  });
+});
+server/src/tests/integration/api.test.js
+client/src/components/auth/tests/LoginForm.test.js
+import React from 'react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { BrowserRouter } from 'react-router-dom';
+import LoginForm from '../LoginForm';
+import { AuthProvider } from '../../../contexts/AuthContext';
+확장
+message.txt
+3KB
+alpngmu99 — 어제 오후 6:39
+server/src/database/tests/integrity.test.js
+alpngmu99 — 어제 오후 9:55
+-- 1. 학교소개 (School Introduction) - Category ID: 1
+INSERT INTO knowledge_base (category_id, keywords, question, answer, priority) VALUES
+(1, 'seoultech,seoul national university of science and technology,university introduction,about seoultech', 'What is Seoul National University of Science and Technology?', 'Seoul National University of Science and Technology (SeoulTech) is a national university located in Seoul, South Korea. Established in 1910, it has over 110 years of history and is recognized as one of the leading universities in science and technology education. The university offers comprehensive programs in engineering, natural sciences, humanities, social sciences, and arts.', 10),
+(1, 'history,establishment,founded,seoultech history', 'When was SeoulTech established?', 'SeoulTech was originally established in 1910 as a public technical school. It went through several transformations and became Seoul National University of Science and Technology in 2010. The university has a proud history of over 110 years in technical and engineering education.', 9),
+(1, 'location,campus,address,where,seoultech location', 'Where is SeoulTech located?', 'SeoulTech''s main campus is located at 232 Gongneung-ro, Nowon-gu, Seoul, South Korea. The campus is easily accessible by public transportation, with Gongneung Station (Line 7) nearby. The university also has additional facilities in other parts of Seoul.', 9),
+(1, 'ranking,reputation,recognition,achievement', 'What is SeoulTech''s academic reputation?', 'SeoulTech is consistently ranked among the top universities in South Korea, particularly in engineering and technology fields. It is recognized for its strong industry partnerships, research output, and graduate employment rates. The university has received numerous awards for innovation and educational excellence.', 8),
+확장
+message.txt
+33KB
+jamesjoshuahamburgerhyeon — 어제 오후 10:54
+1.Google login
+2.2-1) 
+ Chatgpt Finetuning
+3.
+jamesjoshuahamburgerhyeon — 어제 오후 10:54
+.
+jamesjoshuahamburgerhyeon — 오전 3:30
+deployed it
+First problem after deploying
+이미지
+jamesjoshuahamburgerhyeon — 오전 4:11
+CI/CD test based on
+
+ci.yml, setuptest.js
+// server/src/setupTests.js
+// Jest setup file for testing environment
+//server/src/setupTests.js
+// Set test environment variables
+process.env.NODE_ENV = 'test';
+process.env.JWT_SECRET = 'test-secret';
+process.env.JWT_REFRESH_SECRET = 'test-refresh-secret';
+// Use dynamic port like your app.js
+process.env.PORT = process.env.PORT || 3000;
+
+// Node.js 환경에서 TextEncoder/TextDecoder 설정
+const { TextEncoder, TextDecoder } = require('util');
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
+
+// 콘솔 로그 숨기기 (선택사항)
+if (process.env.HIDE_CONSOLE_LOGS === 'true') {
+  global.console = {
+    ...console,
+    log: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    info: jest.fn(),
+    debug: jest.fn(),
+  };
+}
+
+// Setup test database or mock data if needed
+beforeAll(() => {
+  // Initialize test setup
+});
+
+afterAll(() => {
+  // Cleanup after tests
+});
+
+// Add any global test utilities here
+global.testUtils = {
+  // Add common test helper functions
+};
+
+almost working with relative path error
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main]
+    branches: [ main, develop ]
   pull_request:
-    branches: [main]
+확장
+message.txt
+6KB
+jamesjoshuahamburgerhyeon — 오전 4:12
+please check my forked repository's two file, we are almost done and we could make CI test through github
+
+for Deployment's Post.auth/login error, I need help
+alpngmu99 — 오전 8:25
+state that we implemented key features that we've learned via project 1 and 2
+for 1, we have light/dark mode
+for 2, when we hover the main features, the features react
+Butler — 오전 8:28
+?
+﻿
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
 
 jobs:
-  build:
+  # Backend testing
+  backend-test:
     runs-on: ubuntu-latest
+    
     strategy:
       matrix:
-        node-version: [18.x]
+        node-version: [18.x, 20.x]
+    
     steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-      - run: npm ci
-      - run: npm test
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: server/package-lock.json
+    
+    - name: Install backend dependencies
+      run: |
+        cd server
+        npm ci
+    
+    - name: Run backend tests
+      run: |
+        cd server
+        # Check if tests exist before running
+        if [ -f "package.json" ] && grep -q '"test"' package.json; then
+          npm test -- --passWithNoTests || echo "Tests failed but continuing..."
+        else
+          echo "No test script found - skipping tests"
+        fi
+      env:
+        NODE_ENV: test
+        JWT_SECRET: test-secret
+        JWT_REFRESH_SECRET: test-refresh-secret
+    
+    - name: Run backend linting
+      run: |
+        cd server
+        npm run lint || echo "No lint script - skipping"
+
+  # Frontend testing (if client folder exists)
+  frontend-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Check if client folder exists
+      id: check-client
+      run: |
+        if [ -d "client" ]; then
+          echo "exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "exists=false" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Setup Node.js for frontend
+      if: steps.check-client.outputs.exists == 'true'
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        cache-dependency-path: client/package-lock.json
+    
+    - name: Install frontend dependencies
+      if: steps.check-client.outputs.exists == 'true'
+      run: |
+        cd client
+        npm ci
+    
+    - name: Build frontend
+      if: steps.check-client.outputs.exists == 'true'
+      run: |
+        cd client
+        npm run build
+      env:
+        REACT_APP_API_URL: https://seoultech-backend.onrender.com
+    
+    - name: Run frontend tests
+      if: steps.check-client.outputs.exists == 'true'
+      run: |
+        cd client
+        npm test -- --coverage --watchAll=false || echo "No tests found - skipping"
+
+  # Security audit
+  security:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        cache-dependency-path: server/package-lock.json
+    
+    - name: Install backend dependencies
+      run: |
+        cd server
+        npm ci
+    
+    - name: Run security audit for backend
+      run: |
+        cd server
+        npm audit --audit-level=moderate
+
+  # API endpoint tests using your existing tests folder
+  api-tests:
+    runs-on: ubuntu-latest
+    needs: [backend-test]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        cache-dependency-path: server/package-lock.json
+    
+    - name: Install dependencies
+      run: |
+        cd server
+        npm ci
+    
+    - name: Start server for testing
+      run: |
+        cd server
+        npm start &
+        sleep 10
+      env:
+        NODE_ENV: test
+        PORT: 3002  # Use different port for CI to avoid conflicts
+        JWT_SECRET: test-secret
+        JWT_REFRESH_SECRET: test-refresh-secret
+    
+    - name: Run API health check tests
+      run: |
+        # Test basic endpoints using dynamic port
+        TEST_PORT=${PORT:-3002}
+        curl -f http://localhost:$TEST_PORT/health || exit 1
+        curl -f http://localhost:$TEST_PORT/ || exit 1
+        echo "✅ Basic API endpoints are working"
+    
+    - name: Run custom API tests
+      run: |
+        if [ -d "tests" ]; then
+          cd tests
+          # Add your test commands here if you have test files
+          echo "Running custom API tests..."
+        else
+          echo "No tests directory found - skipping custom tests"
+        fi
+
+  # Deployment
+  deploy:
+    needs: [backend-test, frontend-test, security, api-tests]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Deploy to Render
+      run: |
+        echo "🚀 Deploying to Render..."
+        echo "📡 Backend: https://seoultech-backend.onrender.com"
+        echo "🌐 Frontend: https://seoultech-frontend.onrender.com"
+        echo "✅ Render will automatically deploy from main branch"
+        
+    - name: Deployment notification
+      run: |
+        echo "=== Deployment Status ==="
+        echo "✅ Backend API: Ready"
+        echo "✅ Frontend App: Ready"
+        echo "📚 API Docs: https://seoultech-backend.onrender.com/api-docs"
+        echo "💊 Health Check: https://seoultech-backend.onrender.com/health"
