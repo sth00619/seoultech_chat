@@ -14,16 +14,10 @@ module.exports = {
   moduleDirectories: ['node_modules', 'server'],
   verbose: true,
   testTimeout: 10000,
-  // Babel 변환 설정 추가
-  transform: {
-    '^.+\\.(js|jsx)$': 'babel-jest'
-  },
-  // JSX 파일 확장자 인식
-  moduleFileExtensions: ['js', 'jsx', 'json'],
-  // React 테스트 환경 설정
-  testEnvironment: 'jsdom',
-  // 모듈 이름 매핑 (필요시)
-  moduleNameMapper: {
-    '\\.(css|less|scss|sass)$': 'identity-obj-proxy'
+  // 테스트 순서 지정
+  testSequencer: '<rootDir>/testSequencer.js',
+  // 글로벌 설정
+  globals: {
+    DB_HOST: '127.0.0.1'
   }
 };
