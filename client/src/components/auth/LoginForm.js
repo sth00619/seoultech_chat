@@ -152,6 +152,47 @@ const LoginForm = () => {
           >
             Log In
           </Button>
+
+          {/* OAuth 구분선 */}
+          <div className="oauth-divider">
+            <span>또는</span>
+          </div>
+
+          {/* 네이버 로그인 버튼 */}
+          <button
+            type="button"
+            onClick={() => window.location.href = 'http://localhost:3000/api/auth/naver'}
+            style={{
+              width: '100%',
+              backgroundColor: '#03C75A',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              padding: '12px 16px',
+              marginTop: '1rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              fontWeight: '600',
+              fontSize: '16px',
+              cursor: 'pointer',
+              transition: 'background-color 0.2s ease'
+            }}
+            onMouseEnter={(e) => e.target.style.backgroundColor = '#02b351'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = '#03C75A'}
+          >
+            <img 
+              src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath fill='white' d='M13.5 10.5L8.5 3H3v14h6.5V9.5l5 7.5H20V3h-6.5v7.5z'/%3E%3C/svg%3E" 
+              alt="N"
+              style={{ 
+                width: '20px', 
+                height: '20px',
+                display: 'block'
+              }}
+            />
+            <span style={{ display: 'block', lineHeight: '1' }}>네이버로 시작하기</span>
+          </button>
         </form>
 
         <div className="auth-footer">

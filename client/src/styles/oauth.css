@@ -1,0 +1,85 @@
+/* OAuth 로그인 스타일 */
+.oauth-divider {
+  position: relative;
+  text-align: center;
+  margin: 2rem 0 1rem;
+}
+
+.oauth-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: var(--border-color);
+}
+
+.oauth-divider span {
+  position: relative;
+  padding: 0 1rem;
+  background-color: var(--bg-primary);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.oauth-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.oauth-button:hover {
+  background-color: var(--bg-secondary);
+}
+
+.oauth-button.naver {
+  background-color: #03C75A;
+  color: white;
+  border-color: #03C75A;
+}
+
+.oauth-button.naver:hover {
+  background-color: #02b351;
+}
+
+/* 네이버 버튼 내부 텍스트 스타일 */
+.naver-login-btn {
+  background-color: #03C75A !important;
+  color: white !important;
+  border: none !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.3px;
+}
+
+.naver-login-btn:hover {
+  background-color: #02b351 !important;
+}
+
+.naver-login-btn span {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.oauth-error {
+  background-color: #fee;
+  color: #c33;
+  padding: 0.75rem;
+  border-radius: var(--border-radius);
+  margin-bottom: 1rem;
+  text-align: center;
+  font-size: 0.875rem;
+}

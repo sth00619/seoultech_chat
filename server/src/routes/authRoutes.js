@@ -1,4 +1,5 @@
 const express = require('express');
+const passport = require('passport'); 
 const authController = require('../controllers/authController');
 const authMiddleware = require('../middleware/authMiddleware');
 
@@ -250,5 +251,58 @@ router.post('/refresh', authController.refreshToken);
  *         description: 서버 내부 오류
  */
 router.get('/me', authMiddleware, authController.getCurrentUser);
+
+/**
+ * @swagger
+ * /api/auth/naver:
+ *   get:
+ *     summary: 네이버 OAuth 로그인 시작
+ *     description: 네이버 로그인 페이지로 리다이렉트합니다.
+ *     tags: [Authentication]
+ *     responses:
+ *       302:
+ *         description: 네이버 로그인 페이지로 리다이렉트
+ */
+router.get('/naver', passport.authenticate('naver'));
+
+/**
+ * @swagger
+ * /api/auth/naver/callback:
+ *   get:
+ *     summary: 네이버 OAuth 콜백
+ *     description: 네이버 로그인 후 콜백을 처리합니다.
+ *     tags: [Authentication]
+ *     parameters:
+ *       - in: query
+ *         name: code
+ *         schema:
+ *           type: string
+ *         description: 네이버에서 전달하는 인증 코드
+ *       - in: query
+ *         name: state
+ *         schema:
+ *           type: string
+ *         description: CSRF 방지를 위한 상태 값
+ *     responses:
+ *       302:
+ *         description: 로그인 성공 후 프론트엔드로 리다이렉트
+ */
+router.get('/naver/callback', 
+  passport.authenticate('naver', { failureRedirect: '/api/auth/oauth/failure' }),
+  authController.naverCallback
+);
+
+/**
+ * @swagger
+ * /api/auth/oauth/failure:
+ *   get:
+ *     summary: OAuth 로그인 실패 처리
+ *     description: OAuth 로그인 실패 시 프론트엔드로 에러와 함께 리다이렉트합니다.
+ *     tags: [Authentication]
+ *     responses:
+ *       302:
+ *         description: 로그인 페이지로 리다이렉트
+ */
+router.get('/oauth/failure', authController.oauthFailure);
 
 module.exports = router;

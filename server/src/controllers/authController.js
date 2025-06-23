@@ -194,6 +194,41 @@ class AuthController {
       res.status(500).json({ error: 'Internal server error' });
     }
   }
+
+// 네이버 OAuth 성공 콜백
+  async naverCallback(req, res) {
+    try {
+      // Passport가 인증한 사용자 정보
+      const user = req.user;
+      
+      if (!user) {
+        return res.redirect('http://localhost:3001/login?error=oauth_failed');
+      }
+
+      // JWT 토큰 생성
+      const tokenPayload = {
+        userId: user.id,
+        email: user.email
+      };
+      
+      const accessToken = jwtModule.createToken(tokenPayload);
+      const refreshToken = jwtModule.createRefreshToken({ userId: user.id });
+
+      // 프론트엔드로 리다이렉트 (토큰을 쿼리 파라미터로 전달)
+      const redirectUrl = `http://localhost:3001/oauth/callback?token=${accessToken}&refreshToken=${refreshToken}`;
+      res.redirect(redirectUrl);
+      
+    } catch (error) {
+      console.error('Naver OAuth callback error:', error);
+      res.redirect('http://localhost:3001/login?error=oauth_error');
+    }
+  }
+
+  // OAuth 로그인 실패 처리
+  async oauthFailure(req, res) {
+    res.redirect('http://localhost:3001/login?error=oauth_failed');
+  }
+  
 }
 
 module.exports = new AuthController();

@@ -13,11 +13,13 @@ import RegisterPage from './components/pages/RegisterPage';
 import ChatPage from './components/pages/ChatPage';
 import ProfilePage from './components/pages/ProfilePage';
 import AboutPage from './components/pages/AboutPage';
+import OAuthCallbackPage from './components/pages/OAuthCallbackPage';
 
 // Styles
 import './styles/globals.css';
 import './styles/components.css';
 import './styles/pages.css';
+import './styles/oauth.css';
 
 function App() {
   useEffect(() => {
@@ -49,6 +51,7 @@ function App() {
                 <Route path={ROUTES.CHAT} element={<ChatPage />} />
                 <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
                 <Route path={ROUTES.ABOUT} element={<AboutPage />} />
+                <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
                 <Route path="*" element={<HomePage />} />
               </Routes>
             </div>

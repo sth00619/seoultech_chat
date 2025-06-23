@@ -1,9 +1,14 @@
 // app.js
 const express = require('express');
 const cors = require('cors');
+const session = require('express-session');
+const passport = require('passport');
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsDoc = require('swagger-jsdoc');
 require('dotenv').config();
+
+const initializePassport = require('./server/src/config/passport');
+initializePassport();
 
 // 라우트 import
 const userRoutes = require('./server/src/routes/userRoutes');
@@ -15,8 +20,27 @@ const errorHandler = require('./server/src/middleware/errorHandler');
 const app = express();
 
 // 미들웨어 설정
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:3001',
+  credentials: true
+}));
 app.use(express.json());
+
+// 세션 설정 (Passport에 필요)
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'seoultech-chat-secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: false, // HTTPS에서는 true로 설정
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000 // 24시간
+  }
+}));
+
+// Passport 미들웨어
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Swagger 설정 - JWT 인증 스키마 제거
 const swaggerOptions = {
